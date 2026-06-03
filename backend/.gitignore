@@ -1,0 +1,17 @@
+# ==============================================
+#  Fichiers à NE JAMAIS envoyer sur GitHub
+# ==============================================
+
+# Variables d'environnement (mots de passe, clés secrètes)
+.env
+
+# Dossier des modules Node.js (trop lourd, se réinstalle avec npm install)
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Fichiers système Windows/Mac
+Thumbs.db
+.DS_Store
