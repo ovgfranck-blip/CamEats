@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Chez Mama Africa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* =========================================================
+       global.css — Variables CSS CamEats (partagées avec toute l'équipe)
+       ========================================================= */
+    :root {
+      --color-primary: #FF6B00;
+      --color-secondary: #1A5C38;
+      --color-dark: #1A1A1A;
+      --color-light: #FAFAFA;
+      --color-text: #2D2D2D;
+      --color-text-light: #888888;
+      --color-border: #CCCCCC;
+      --color-success: #27AE60;
+      --color-error: #E74C3C;
+      --font-title: 'Poppins', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 40px;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+    }
+
+    /* =========================================================
+       restaurant.css — Styles spécifiques à la page vitrine
+       ========================================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-light);
+      color: var(--color-text);
+      min-height: 100vh;
+    }
+
+    /* ---- Bannière ---- */
+    .banner {
+      position: relative;
+      height: 280px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d1a00 60%, #ff6b00 100%);
+      overflow: hidden;
+    }
+    .banner-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.45;
+    }
+    .banner-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 100%);
+    }
+    .banner-title {
+      position: absolute;
+      bottom: var(--spacing-lg);
+      left: var(--spacing-xl);
+      font-family: var(--font-title);
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* ---- Layout principal ---- */
+    .page-layout {
+      display: flex;
+      gap: var(--spacing-lg);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--spacing-lg) var(--spacing-md);
+    }
+
+    /* ---- Sidebar gauche ---- */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+    .sidebar-card {
+      background: #fff;
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      position: sticky;
+      top: var(--spacing-md);
+    }
+    .sidebar-logo {
+      width: 72px; height: 72px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      margin-bottom: var(--spacing-md);
+      border: 3px solid var(--color-primary);
+    }
+    .sidebar-logo-placeholder {
+      width: 72px; height: 72px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--color-primary), #ff9a00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin-bottom: var(--spacing-md);
+      border: 3px solid var(--color-primary);
+    }
+    .sidebar h2 {
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: var(--spacing-xs);
+      color: var(--color-dark);
+    }
+    .sidebar-desc {
+      font-size: 0.85rem;
+      color: var(--color-text-light);
+      margin-bottom: var(--spacing-md);
+      line-height: 1.5;
+    }
+    .sidebar-info {
+      display: flex; flex-direction: column; gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+    .sidebar-info-item {
+      display: flex; align-items: center; gap: var(--spacing-sm);
+      font-size: 0.82rem;
+      color: var(--color-text);
+    }
+    .sidebar-info-item .icon {
+      font-size: 1rem; width: 20px; text-align: center;
+    }
+    .badge-status {
+      display: inline-block;
+      background: #e8f5e9; color: var(--color-success);
+      font-size: 0.75rem; font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      margin-bottom: var(--spacing-md);
+    }
+    .btn-commander {
+      display: block; width: 100%;
+      background-color: var(--color-primary);
+      color: #fff;
+      border: none; border-radius: var(--radius-md);
+      padding: 12px;
+      font-family: var(--font-title);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-commander:hover { background: #e05a00; transform: translateY(-1px); }
+    .btn-commander:active { transform: translateY(0); }
+
+    /* ---- Contenu principal ---- */
+    .main-content { flex: 1; min-width: 0; }
+
+    /* ---- Onglets catégories ---- */
+    .categories-tabs {
+      display: flex; gap: var(--spacing-sm);
+      flex-wrap: wrap;
+      margin-bottom: var(--spacing-lg);
+    }
+    .tab-btn {
+      background: #fff;
+      border: 2px solid var(--color-border);
+      border-radius: 20px;
+      padding: 8px 18px;
+      font-family: var(--font-title);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--color-text-light);
+      transition: all 0.18s;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background-color: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+
+    /* ---- Grille des plats ---- */
+    .dishes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .dish-card {
+      background: #fff;
+      border-radius: var(--radius-md);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .dish-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .dish-card.epuise { opacity: 0.6; }
+
+    .dish-img-wrap { position: relative; height: 150px; overflow: hidden; }
+    .dish-img-wrap .dish-emoji {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem;
+      background: linear-gradient(135deg, #fff5eb, #ffecd2);
+    }
+
+    /* Badges */
+    .badge {
+      position: absolute; top: var(--spacing-sm);
+      font-size: 0.7rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px;
+    }
+    .badge-jour { left: var(--spacing-sm); background: var(--color-primary); color: #fff; }
+    .badge-epuise { left: var(--spacing-sm); background: #555; color: #fff; }
+
+    .dish-body { padding: var(--spacing-md); }
+    .dish-name {
+      font-family: var(--font-title);
+      font-size: 0.95rem; font-weight: 700;
+      margin-bottom: var(--spacing-xs);
+      color: var(--color-dark);
+    }
+    .dish-desc {
+      font-size: 0.78rem; color: var(--color-text-light);
+      line-height: 1.4; margin-bottom: var(--spacing-sm);
+    }
+    .dish-footer {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .dish-price {
+      font-family: var(--font-title);
+      font-size: 1rem; font-weight: 700;
+      color: var(--color-primary);
+    }
+    .btn-panier {
+      background: var(--color-primary);
+      color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      padding: 7px 14px;
+      font-size: 0.8rem; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-panier:hover { background: #e05a00; }
+    .btn-panier:disabled {
+      background: #ccc; cursor: not-allowed;
+    }
+
+    /* ---- Section Avis ---- */
+    .reviews-section h3 {
+      font-family: var(--font-title);
+      font-size: 1.1rem; font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-dark);
+    }
+    .reviews-list { display: flex; flex-direction: column; gap: var(--spacing-md); }
+    .review-card {
+      background: #fff;
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    }
+    .review-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: var(--spacing-xs);
+    }
+    .review-author {
+      font-family: var(--font-title);
+      font-size: 0.88rem; font-weight: 600;
+      color: var(--color-dark);
+    }
+    .review-stars { color: #f59e0b; font-size: 0.9rem; }
+    .review-text { font-size: 0.82rem; color: var(--color-text-light); line-height: 1.5; }
+
+    /* ---- Toast panier ---- */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--color-dark);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-family: var(--font-title);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 768px) {
+      .page-layout { flex-direction: column; padding: var(--spacing-sm); }
+      .sidebar { width: 100%; }
+      .sidebar-card { position: static; }
+      .banner-title { font-size: 1.4rem; left: var(--spacing-md); }
+      .dishes-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================================================
+       BANNIÈRE DU RESTAURANT
+       ================================================ -->
+  <div class="banner">
+    <!-- Remplacer src par l'URL de la bannière du restaurant depuis l'API -->
+    <!-- <img class="banner-img" src="/api/restaurants/1/banner" alt="Bannière restaurant" /> -->
+    <div class="banner-overlay"></div>
+    <div class="banner-title">🍽️ Chez Mama Africa</div>
+  </div>
+
+  <!-- ================================================
+       LAYOUT : SIDEBAR + CONTENU PRINCIPAL
+       ================================================ -->
+  <div class="page-layout">
+
+    <!-- ---- SIDEBAR GAUCHE ---- -->
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <!-- Logo restaurant -->
+        <div class="sidebar-logo-placeholder">🍲</div>
+
+        <!-- Nom et description -->
+        <h2>Chez Mama Africa</h2>
+        <p class="sidebar-desc">
+          Cuisine traditionnelle camerounaise — Ndolé, Eru, Poulet DG et bien plus, préparés avec amour depuis 2010.
+        </p>
+
+        <!-- Statut ouvert -->
+        <span class="badge-status">✅ Ouvert maintenant</span>
+
+        <!-- Infos pratiques -->
+        <div class="sidebar-info">
+          <div class="sidebar-info-item">
+            <span class="icon">🕐</span>
+            <span>Lun–Sam : 08h–22h | Dim : 10h–20h</span>
+          </div>
+          <div class="sidebar-info-item">
+            <span class="icon">📍</span>
+            <span>Quartier Bastos, Yaoundé</span>
+          </div>
+          <div class="sidebar-info-item">
+            <span class="icon">📞</span>
+            <span>+237 655 123 456</span>
+          </div>
+          <div class="sidebar-info-item">
+            <span class="icon">🛵</span>
+            <span>Livraison : à partir de 500 FCFA</span>
+          </div>
+          <div class="sidebar-info-item">
+            <span class="icon">⭐</span>
+            <span>4.7 / 5 — 128 avis</span>
+          </div>
+        </div>
+
+        <!-- Bouton commander -->
+        <button class="btn-commander" onclick="scrollToMenu()">
+          🛒 Commander maintenant
+        </button>
+      </div>
+    </aside>
+
+    <!-- ---- CONTENU PRINCIPAL ---- -->
+    <main class="main-content">
+
+      <!-- Onglets catégories -->
+      <div class="categories-tabs" id="menuSection">
+        <button class="tab-btn active" onclick="filterCategory('tous', this)">Tous</button>
+        <button class="tab-btn" onclick="filterCategory('entrees', this)">🥗 Entrées</button>
+        <button class="tab-btn" onclick="filterCategory('plats', this)">🍲 Plats</button>
+        <button class="tab-btn" onclick="filterCategory('boissons', this)">🥤 Boissons</button>
+        <button class="tab-btn" onclick="filterCategory('desserts', this)">🍮 Desserts</button>
+      </div>
+
+      <!-- Grille des plats -->
+      <div class="dishes-grid" id="dishesGrid"></div>
+
+      <!-- Section Avis clients -->
+      <section class="reviews-section">
+        <h3>💬 Avis des clients</h3>
+        <div class="reviews-list" id="reviewsList"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast notification panier -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ================================================
+       restaurant.js — Logique de la page vitrine
+       ================================================ -->
+  <script>
+    // -------------------------------------------------------
+    // DONNÉES FICTIVES — À remplacer par des appels API
+    // quand Nadia aura terminé le backend :
+    // const res = await fetch('/api/restaurants/1');
+    // const restaurant = await res.json();
+    // -------------------------------------------------------
+
+    // Données du restaurant
+    const restaurant = {
+      id: 1,
+      nom: "Chez Mama Africa",
+      description: "Cuisine traditionnelle camerounaise",
+      adresse: "Quartier Bastos, Yaoundé",
+      telephone: "+237 655 123 456",
+      horaires: "Lun–Sam : 08h–22h | Dim : 10h–20h",
+      note: 4.7,
+      nombreAvis: 128
+    };
+
+    // Liste des plats
+    const dishes = [
+      {
+        id: 1,
+        nom: "Ndolé au poisson fumé",
+        description: "Plat traditionnel aux feuilles de ndolé, crevettes et poisson fumé.",
+        prix: 2500,
+        categorie: "plats",
+        emoji: "🍲",
+        disponible: true,
+        platDuJour: true
+      },
+      {
+        id: 2,
+        nom: "Poulet DG",
+        description: "Poulet sauté aux plantains mûrs, légumes frais et épices maison.",
+        prix: 3500,
+        categorie: "plats",
+        emoji: "🍗",
+        disponible: true,
+        platDuJour: false
+      },
+      {
+        id: 3,
+        nom: "Eru & Water Fufu",
+        description: "Feuilles d'eru mijotées avec coco râpé, servies avec water fufu.",
+        prix: 2000,
+        categorie: "plats",
+        emoji: "🥬",
+        disponible: true,
+        platDuJour: false
+      },
+      {
+        id: 4,
+        nom: "Beignets haricots",
+        description: "Beignets croustillants de haricots frits, sauce pimentée maison.",
+        prix: 500,
+        categorie: "entrees",
+        emoji: "🟡",
+        disponible: true,
+        platDuJour: false
+      },
+      {
+        id: 5,
+        nom: "Salade de tomates",
+        description: "Tomates fraîches, oignons, avocat et vinaigrette citron.",
+        prix: 800,
+        categorie: "entrees",
+        emoji: "🥗",
+        disponible: false,
+        platDuJour: false
+      },
+      {
+        id: 6,
+        nom: "Okok (Gnetum)",
+        description: "Feuilles d'okok mijotées avec huile de palme et écrevisses.",
+        prix: 1800,
+        categorie: "plats",
+        emoji: "🌿",
+        disponible: true,
+        platDuJour: false
+      },
+      {
+        id: 7,
+        nom: "Jus de gingembre",
+        description: "Gingembre frais pressé, citron vert et miel naturel.",
+        prix: 500,
+        categorie: "boissons",
+        emoji: "🥤",
+        disponible: true,
+        platDuJour: false
+      },
+      {
+        id: 8,
+        nom: "Jus de bissap",
+        description: "Fleurs d'hibiscus séchées, sucre de canne et menthe fraîche.",
+        prix: 400,
+        categorie: "boissons",
+        emoji: "🌺",
+        disponible: true,
+        platDuJour: false
+      },
+      {
+        id: 9,
+        nom: "Puff-puff au miel",
+        description: "Beignets moelleux arrosés de miel et saupoudrés de sucre glace.",
+        prix: 300,
+        categorie: "desserts",
+        emoji: "🍩",
+        disponible: true,
+        platDuJour: false
+      },
+      {
+        id: 10,
+        nom: "Banane plantain sucrée",
+        description: "Plantains mûrs frits au beurre et caramélisés au sucre brun.",
+        prix: 600,
+        categorie: "desserts",
+        emoji: "🍌",
+        disponible: false,
+        platDuJour: false
+      }
+    ];
+
+    // Avis des clients
+    const reviews = [
+      { auteur: "Marie K.", note: 5, commentaire: "Le Ndolé est exceptionnel, exactement comme celui de ma mère ! Livraison rapide et plat encore chaud. Je recommande vivement." },
+      { auteur: "Pascal N.", note: 4, commentaire: "Très bon Poulet DG, portions généreuses. Le jus de gingembre est parfait pour accompagner." },
+      { auteur: "Christelle A.", note: 5, commentaire: "La meilleure cuisine camerounaise de Yaoundé selon moi. J'y commande chaque semaine !" }
+    ];
+
+    // -------------------------------------------------------
+    // Panier local (sera envoyé à l'API commandes de Nadia)
+    // -------------------------------------------------------
+    let panier = [];
+    let categorieActive = 'tous';
+
+    // -------------------------------------------------------
+    // Affiche les plats selon la catégorie sélectionnée
+    // -------------------------------------------------------
+    function renderDishes(categorie) {
+      const grid = document.getElementById('dishesGrid');
+      const filtered = categorie === 'tous'
+        ? dishes
+        : dishes.filter(d => d.categorie === categorie);
+
+      grid.innerHTML = filtered.map(dish => `
+        <div class="dish-card ${dish.disponible ? '' : 'epuise'}" id="dish-${dish.id}">
+          <div class="dish-img-wrap">
+            <div class="dish-emoji">${dish.emoji}</div>
+            ${dish.platDuJour && dish.disponible ? '<span class="badge badge-jour">⭐ Plat du jour</span>' : ''}
+            ${!dish.disponible ? '<span class="badge badge-epuise">Épuisé</span>' : ''}
+          </div>
+          <div class="dish-body">
+            <div class="dish-name">${dish.nom}</div>
+            <div class="dish-desc">${dish.description}</div>
+            <div class="dish-footer">
+              <span class="dish-price">${dish.prix.toLocaleString('fr-FR')} FCFA</span>
+              <button
+                class="btn-panier"
+                onclick="ajouterAuPanier(${dish.id})"
+                ${!dish.disponible ? 'disabled' : ''}
+              >
+                ${dish.disponible ? '+ Panier' : 'Épuisé'}
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // -------------------------------------------------------
+    // Filtre les plats par catégorie au clic d'un onglet
+    // -------------------------------------------------------
+    function filterCategory(categorie, btn) {
+      categorieActive = categorie;
+
+      // Mise à jour de l'onglet actif
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      renderDishes(categorie);
+    }
+
+    // -------------------------------------------------------
+    // Ajoute un plat au panier et affiche une notification
+    // -------------------------------------------------------
+    function ajouterAuPanier(dishId) {
+      const dish = dishes.find(d => d.id === dishId);
+      if (!dish || !dish.disponible) return;
+
+      const existant = panier.find(item => item.id === dishId);
+      if (existant) {
+        existant.quantite += 1;
+      } else {
+        panier.push({ id: dish.id, nom: dish.nom, prix: dish.prix, quantite: 1 });
+      }
+
+      // Afficher le toast de confirmation
+      afficherToast(`✅ ${dish.nom} ajouté au panier`);
+
+      // TODO : quand Nadia aura l'API, envoyer le panier :
+      // await fetch('/api/orders', { method: 'POST', body: JSON.stringify({ items: panier }) });
+    }
+
+    // -------------------------------------------------------
+    // Affiche une notification temporaire (toast)
+    // -------------------------------------------------------
+    function afficherToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // -------------------------------------------------------
+    // Affiche les avis clients
+    // -------------------------------------------------------
+    function renderReviews() {
+      const list = document.getElementById('reviewsList');
+      list.innerHTML = reviews.map(r => `
+        <div class="review-card">
+          <div class="review-header">
+            <span class="review-author">${r.auteur}</span>
+            <span class="review-stars">${'★'.repeat(r.note)}${'☆'.repeat(5 - r.note)}</span>
+          </div>
+          <p class="review-text">${r.commentaire}</p>
+        </div>
+      `).join('');
+    }
+
+    // -------------------------------------------------------
+    // Scroll vers le menu au clic du bouton Commander
+    // -------------------------------------------------------
+    function scrollToMenu() {
+      document.getElementById('menuSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // -------------------------------------------------------
+    // Initialisation de la page
+    // -------------------------------------------------------
+    renderDishes('tous');
+    renderReviews();
+  </script>
+</body>
+</html>
