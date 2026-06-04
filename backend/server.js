@@ -13,7 +13,13 @@ require('dotenv').config();
 const { testConnection } = require('./config/database');
 
 // Import des routes
-const authRoutes = require('./routes/auth');
+const authRoutes        = require('./routes/auth');
+const restaurantRoutes  = require('./routes/restaurants');
+const dishRoutes        = require('./routes/dishes');
+const orderRoutes       = require('./routes/orders');
+const deliveryRoutes    = require('./routes/deliveries');
+const reviewRoutes      = require('./routes/reviews');
+const adminRoutes       = require('./routes/admin');
 
 // ----------------------------------------------
 //  Initialisation d'Express
@@ -78,7 +84,19 @@ app.get('/', (req, res) => {
 });
 
 // Routes d'authentification
-app.use('/api/auth', authRoutes);
+app.use('/api/auth',        authRoutes);
+
+// Routes restaurants et plats
+app.use('/api/restaurants', restaurantRoutes);
+app.use('/api/dishes',      dishRoutes);
+
+// Routes commandes, livraisons, avis
+app.use('/api/orders',      orderRoutes);
+app.use('/api/deliveries',  deliveryRoutes);
+app.use('/api/reviews',     reviewRoutes);
+
+// Routes admin
+app.use('/api/admin',       adminRoutes);
 
 // Route 404 — si aucune route ne correspond
 app.use((req, res) => {
