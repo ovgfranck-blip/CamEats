@@ -1,0 +1,295 @@
+/* ============================================
+   CamEats — client.css
+   Styles de l'espace client
+   Auteur : Astou
+   ============================================ */
+
+/* ---- NAVBAR ---- */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-xl);
+  background-color: white;
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar__logo {
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.navbar__back {
+  font-size: 14px;
+  color: var(--color-text-light);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.navbar__back:hover {
+  color: var(--color-primary);
+}
+
+/* ---- EN-TÊTE COMPARATEUR ---- */
+.comparator-header {
+  background-color: white;
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.comparator-header__title {
+  font-family: var(--font-title);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
+}
+
+.comparator-header__subtitle {
+  font-size: 15px;
+  color: var(--color-text-light);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ---- BARRE DE RECHERCHE ---- */
+.search-bar {
+  display: flex;
+  gap: var(--spacing-sm);
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.search-bar__input {
+  flex: 1;
+  padding: 12px var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  color: var(--color-text);
+}
+
+.search-bar__input:focus {
+  border-color: var(--color-primary);
+}
+
+.search-bar__btn {
+  padding: 12px var(--spacing-lg);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+/* ---- ZONE PRINCIPALE ---- */
+.comparator-main {
+  max-width: 1100px;
+  margin: var(--spacing-xl) auto;
+  padding: 0 var(--spacing-lg);
+}
+
+/* ---- ÉTAT VIDE / CHARGEMENT / ERREUR ---- */
+.empty-state,
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  color: var(--color-text-light);
+}
+
+.empty-state__icon {
+  font-size: 48px;
+}
+
+.empty-state__text {
+  font-size: 15px;
+}
+
+/* ---- TITRE RÉSULTATS ---- */
+.results-title {
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text);
+}
+
+/* ---- GRILLE DE COMPARAISON ---- */
+.comparator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ---- CARTE RESTAURANT ---- */
+.compare-card {
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.compare-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.compare-card--best {
+  border: 2px solid var(--color-primary);
+}
+
+.compare-card--unavailable {
+  opacity: 0.6;
+}
+
+.compare-card__unavailable-overlay {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background-color: var(--color-error);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.compare-card__badge {
+  background-color: var(--color-primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: var(--spacing-xs) var(--spacing-md);
+  text-align: center;
+}
+
+.compare-card__photo {
+  background-color: var(--color-light);
+  text-align: center;
+  font-size: 52px;
+  padding: var(--spacing-lg) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.compare-card__body {
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.compare-card__restaurant {
+  font-family: var(--font-title);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.compare-card__rating {
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+.compare-card__rating .star {
+  color: var(--color-primary);
+}
+
+.compare-card__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.compare-card__label {
+  color: var(--color-text-light);
+}
+
+.compare-card__value {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.compare-card__row--total {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.compare-card__total {
+  color: var(--color-primary);
+  font-family: var(--font-title);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.compare-card__time {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.compare-card__btn {
+  width: 100%;
+  margin-top: var(--spacing-xs);
+  text-align: center;
+}
+
+.compare-card__btn:disabled {
+  background-color: var(--color-border);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* ---- BANDEAU MEILLEUR PRIX ---- */
+.best-deal {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  background-color: var(--color-light);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.best-deal__badge {
+  font-weight: 700;
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+/* ---- RESPONSIVE MOBILE ---- */
+@media (max-width: 600px) {
+  .comparator-header {
+    padding: var(--spacing-lg);
+  }
+
+  .comparator-header__title {
+    font-size: 22px;
+  }
+
+  .search-bar {
+    flex-direction: column;
+  }
+
+  .comparator-main {
+    padding: 0 var(--spacing-md);
+    margin-top: var(--spacing-lg);
+  }
+
+  .comparator-grid {
+    grid-template-columns: 1fr;
+  }
+}

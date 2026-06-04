@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Comparer un plat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/client.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar__logo">🍽️ CamEats</a>
+    <a href="#" class="navbar__back">← Retour aux résultats</a>
+  </nav>
+
+  <!-- EN-TÊTE -->
+  <div class="comparator-header">
+    <h1 class="comparator-header__title">Comparer un plat</h1>
+    <p class="comparator-header__subtitle">Trouve le meilleur prix pour le même plat</p>
+    <div class="search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        class="search-bar__input"
+        placeholder="Ex : Ndolé, Poulet DG, Okok..."
+      />
+      <button class="btn-primary search-bar__btn" onclick="searchDish()">Rechercher</button>
+    </div>
+  </div>
+
+  <!-- RÉSULTATS -->
+  <main class="comparator-main">
+
+    <!-- État initial -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-state__icon">🔍</div>
+      <p class="empty-state__text">Tape le nom d'un plat pour comparer les prix</p>
+    </div>
+
+    <!-- Chargement -->
+    <div class="loading-state" id="loadingState" style="display:none;">
+      <div class="empty-state__icon">⏳</div>
+      <p class="empty-state__text">Recherche en cours...</p>
+    </div>
+
+    <!-- Erreur API -->
+    <div class="error-state" id="errorState" style="display:none;">
+      <div class="empty-state__icon">⚠️</div>
+      <p class="empty-state__text">Impossible de contacter le serveur. Réessaie plus tard.</p>
+    </div>
+
+    <!-- Titre résultats -->
+    <h2 class="results-title" id="resultsTitle" style="display:none;"></h2>
+
+    <!-- Grille des cartes -->
+    <div class="comparator-grid" id="comparatorGrid"></div>
+
+    <!-- Meilleur prix -->
+    <div class="best-deal" id="bestDeal" style="display:none;">
+      <span class="best-deal__badge">🏆 Meilleur prix</span>
+      <span id="bestDealText"></span>
+    </div>
+
+  </main>
+
+  <script src="../../js/client.js"></script>
+  <script>
+
+    // ---------------------------------------------------
+    // Lance la recherche en appelant l'API de Nadia
+    // ---------------------------------------------------
+    async function searchDish() {
+      const query = document.getElementById('searchInput').value.trim();
+      if (!query) return;
+
+      // Cacher tout et afficher le chargement
+      showOnly('loadingState');
+
+      try {
+        // Appel à l'API backend (route définie par Nadia)
+        const response = await fetch('/api/restaurants?dish=' + encodeURIComponent(query));
+
+        if (!response.ok) {
+          showOnly('errorState');
+          return;
+        }
+
+        const restaurants = await response.json();
+
+        if (restaurants.length === 0) {
+          showOnly('emptyState');
+          document.querySelector('#emptyState .empty-state__text').textContent =
+            'Aucun restaurant ne propose ce plat pour le moment.';
+          return;
+        }
+
+        afficherResultats(query, restaurants);
+
+      } catch (error) {
+        // L'API n'est pas encore disponible
+        console.error('Erreur API :', error);
+        showOnly('errorState');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Affiche les cartes de résultats
+    // @param {string} query - Nom du plat recherché
+    // @param {Array} restaurants - Liste reçue de l'API
+    // ---------------------------------------------------
+    function afficherResultats(query, restaurants) {
+      const grid = document.getElementById('comparatorGrid');
+      grid.innerHTML = '';
+
+      // Trouver le meilleur prix parmi les plats disponibles
+      const disponibles = restaurants.filter(r => r.available);
+      const bestPrice = Math.min(...disponibles.map(r => r.price + r.delivery_fee));
+      const bestRestaurant = disponibles.find(r => r.price + r.delivery_fee === bestPrice);
+
+      // Afficher le titre
+      document.getElementById('resultsTitle').textContent =
+        query.toUpperCase() + ' — ' + restaurants.length + ' restaurants';
+
+      // Construire les cartes
+      restaurants.forEach(restaurant => {
+        const total = restaurant.price + restaurant.delivery_fee;
+        const isBest = bestRestaurant && restaurant.id === bestRestaurant.id;
+        grid.appendChild(buildCard(restaurant, total, isBest));
+      });
+
+      // Afficher le bandeau meilleur prix
+      if (bestRestaurant) {
+        document.getElementById('bestDealText').textContent =
+          bestRestaurant.name + ' — ' + formatPrice(bestPrice) + ' tout compris';
+        document.getElementById('bestDeal').style.display = 'flex';
+      }
+
+      showOnly('resultsTitle');
+      document.getElementById('comparatorGrid').style.display = 'grid';
+    }
+
+    // ---------------------------------------------------
+    // Construit une carte restaurant à partir des données API
+    // @param {Object} restaurant - Données du restaurant
+    // @param {number} total - Prix total (plat + livraison)
+    // @param {boolean} isBest - Est-ce le meilleur prix ?
+    // ---------------------------------------------------
+    function buildCard(restaurant, total, isBest) {
+      const card = document.createElement('div');
+      card.className = 'compare-card'
+        + (isBest ? ' compare-card--best' : '')
+        + (!restaurant.available ? ' compare-card--unavailable' : '');
+
+      card.innerHTML = `
+        ${isBest ? '<div class="compare-card__badge">🏆 Meilleur prix</div>' : ''}
+        ${!restaurant.available ? '<div class="compare-card__unavailable-overlay">Épuisé</div>' : ''}
+        <div class="compare-card__photo">🍽️</div>
+        <div class="compare-card__body">
+          <h3 class="compare-card__restaurant">${restaurant.name}</h3>
+          <div class="compare-card__rating"><span class="star">★</span> ${restaurant.rating}</div>
+          <div class="compare-card__row">
+            <span class="compare-card__label">Prix du plat</span>
+            <span class="compare-card__value">${formatPrice(restaurant.price)}</span>
+          </div>
+          <div class="compare-card__row">
+            <span class="compare-card__label">Livraison</span>
+            <span class="compare-card__value">+ ${formatPrice(restaurant.delivery_fee)}</span>
+          </div>
+          <div class="compare-card__row compare-card__row--total">
+            <span class="compare-card__label">Total</span>
+            <span class="compare-card__total">${formatPrice(total)}</span>
+          </div>
+          <div class="compare-card__time">⏱ ${restaurant.delivery_time}</div>
+          <button
+            class="btn-primary compare-card__btn"
+            ${!restaurant.available ? 'disabled' : ''}
+            onclick="commanderIci('${restaurant.id}')">
+            ${restaurant.available ? 'Commander ici' : 'Épuisé'}
+          </button>
+        </div>
+      `;
+      return card;
+    }
+
+    // ---------------------------------------------------
+    // Redirige vers la page de commande du restaurant choisi
+    // @param {string} restaurantId - ID du restaurant
+    // ---------------------------------------------------
+    function commanderIci(restaurantId) {
+      window.location.href = '../client/cart.html?restaurant=' + restaurantId;
+    }
+
+    // ---------------------------------------------------
+    // Affiche uniquement l'élément demandé, cache les autres
+    // @param {string} elementId - ID de l'élément à afficher
+    // ---------------------------------------------------
+    function showOnly(elementId) {
+      const ids = ['emptyState', 'loadingState', 'errorState', 'resultsTitle'];
+      ids.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById('comparatorGrid').style.display = 'none';
+      document.getElementById('bestDeal').style.display = 'none';
+      document.getElementById(elementId).style.display = 'flex';
+    }
+
+    // Recherche en appuyant sur Entrée
+    document.getElementById('searchInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') searchDish();
+    });
+
+  </script>
+</body>
+</html>

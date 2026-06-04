@@ -1,0 +1,62 @@
+/* ============================================
+   CamEats — global.css
+   Variables CSS communes à toute l'équipe
+   NE PAS modifier sans prévenir le groupe WhatsApp
+   ============================================ */
+
+:root {
+  /* Couleurs principales */
+  --color-primary: #FF6B00;
+  --color-secondary: #1A5C38;
+  --color-dark: #1A1A1A;
+  --color-light: #FAFAFA;
+  --color-text: #2D2D2D;
+  --color-text-light: #888888;
+  --color-border: #CCCCCC;
+  --color-success: #27AE60;
+  --color-error: #E74C3C;
+
+  /* Typographie */
+  --font-title: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Espacements */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+
+  /* Bordures arrondies */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background-color: var(--color-light);
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
