@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Rechercher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/client.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar__logo">🍽️ CamEats</a>
+    <a href="#" class="navbar__back">← Accueil</a>
+  </nav>
+
+  <!-- BARRE DE RECHERCHE -->
+  <div class="search-header">
+    <div class="search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        class="search-bar__input"
+        placeholder="Chercher un plat ou un restaurant..."
+      />
+      <button class="btn-primary search-bar__btn" onclick="lancerRecherche()">Rechercher</button>
+    </div>
+
+    <!-- FILTRES -->
+    <div class="filters">
+
+      <div class="filter-group">
+        <label class="filter-group__label">Prix max (FCFA)</label>
+        <select id="filterPrice" class="filter-group__select">
+          <option value="">Tous les prix</option>
+          <option value="2000">Moins de 2 000</option>
+          <option value="5000">Moins de 5 000</option>
+          <option value="10000">Moins de 10 000</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-group__label">Distance</label>
+        <select id="filterDistance" class="filter-group__select">
+          <option value="">Toute distance</option>
+          <option value="2">Moins de 2 km</option>
+          <option value="5">Moins de 5 km</option>
+          <option value="10">Moins de 10 km</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-group__label">Catégorie</label>
+        <select id="filterCategory" class="filter-group__select">
+          <option value="">Toutes</option>
+          <option value="local">Plats locaux</option>
+          <option value="boisson">Boissons</option>
+          <option value="grillade">Grillades</option>
+          <option value="dessert">Desserts</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-group__label">Note minimum</label>
+        <select id="filterRating" class="filter-group__select">
+          <option value="">Toutes les notes</option>
+          <option value="3">★★★ et plus</option>
+          <option value="4">★★★★ et plus</option>
+          <option value="4.5">★★★★★ seulement</option>
+        </select>
+      </div>
+
+      <button class="btn-filter-reset" onclick="reinitialiserFiltres()">✕ Réinitialiser</button>
+
+    </div>
+  </div>
+
+  <!-- RÉSULTATS -->
+  <main class="search-main">
+
+    <!-- État initial -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-state__icon">🍽️</div>
+      <p class="empty-state__text">Tape le nom d'un plat ou d'un restaurant</p>
+    </div>
+
+    <!-- Chargement -->
+    <div class="loading-state" id="loadingState" style="display:none;">
+      <div class="empty-state__icon">⏳</div>
+      <p class="empty-state__text">Recherche en cours...</p>
+    </div>
+
+    <!-- Erreur -->
+    <div class="error-state" id="errorState" style="display:none;">
+      <div class="empty-state__icon">⚠️</div>
+      <p class="empty-state__text">Impossible de contacter le serveur. Réessaie plus tard.</p>
+    </div>
+
+    <!-- Titre résultats -->
+    <h2 class="results-title" id="resultsTitle" style="display:none;"></h2>
+
+    <!-- Grille des restaurants -->
+    <div class="restaurant-grid" id="restaurantGrid"></div>
+
+  </main>
+
+  <script src="../../js/client.js"></script>
+  <script>
+
+    // ---------------------------------------------------
+    // Lance la recherche en appelant l'API de Nadia
+    // ---------------------------------------------------
+    async function lancerRecherche() {
+      const query = document.getElementById('searchInput').value.trim();
+      const price = document.getElementById('filterPrice').value;
+      const distance = document.getElementById('filterDistance').value;
+      const category = document.getElementById('filterCategory').value;
+      const rating = document.getElementById('filterRating').value;
+
+      if (!query) return;
+
+      showOnly('loadingState');
+
+      try {
+        // Construction des paramètres de l'URL pour l'API de Nadia
+        let url = '/api/restaurants?search=' + encodeURIComponent(query);
+        if (price) url += '&max_price=' + price;
+        if (distance) url += '&max_distance=' + distance;
+        if (category) url += '&category=' + category;
+        if (rating) url += '&min_rating=' + rating;
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          showOnly('errorState');
+          return;
+        }
+
+        const restaurants = await response.json();
+
+        if (restaurants.length === 0) {
+          showOnly('emptyState');
+          document.querySelector('#emptyState .empty-state__text').textContent =
+            'Aucun résultat pour cette recherche.';
+          return;
+        }
+
+        afficherRestaurants(query, restaurants);
+
+      } catch (error) {
+        // L'API n'est pas encore disponible
+        console.error('Erreur API :', error);
+        showOnly('errorState');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Affiche la grille des restaurants reçus de l'API
+    // @param {string} query - Terme recherché
+    // @param {Array} restaurants - Liste reçue de l'API
+    // ---------------------------------------------------
+    function afficherRestaurants(query, restaurants) {
+      const grid = document.getElementById('restaurantGrid');
+      grid.innerHTML = '';
+
+      document.getElementById('resultsTitle').textContent =
+        restaurants.length + ' résultat(s) pour "' + query + '"';
+
+      restaurants.forEach(restaurant => {
+        grid.appendChild(buildRestaurantCard(restaurant));
+      });
+
+      showOnly('resultsTitle');
+      document.getElementById('restaurantGrid').style.display = 'grid';
+    }
+
+    // ---------------------------------------------------
+    // Construit une carte restaurant depuis les données API
+    // @param {Object} restaurant - Données du restaurant
+    // ---------------------------------------------------
+    function buildRestaurantCard(restaurant) {
+      const card = document.createElement('div');
+      card.className = 'restaurant-card';
+
+      card.innerHTML = `
+        <div class="restaurant-card__photo">🍽️</div>
+        <div class="restaurant-card__body">
+          <h3 class="restaurant-card__name">${restaurant.name}</h3>
+          <div class="restaurant-card__info">
+            <span class="restaurant-card__rating"><span class="star">★</span> ${restaurant.rating}</span>
+            <span class="restaurant-card__time">⏱ ${restaurant.delivery_time}</span>
+            <span class="restaurant-card__fee">🛵 ${formatPrice(restaurant.delivery_fee)}</span>
+          </div>
+          <button
+            class="btn-primary restaurant-card__btn"
+            onclick="voirRestaurant('${restaurant.id}')">
+            Voir le menu
+          </button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // ---------------------------------------------------
+    // Redirige vers la page du restaurant choisi
+    // @param {string} restaurantId - ID du restaurant
+    // ---------------------------------------------------
+    function voirRestaurant(restaurantId) {
+      window.location.href = '../client/cart.html?restaurant=' + restaurantId;
+    }
+
+    // ---------------------------------------------------
+    // Remet tous les filtres à zéro
+    // ---------------------------------------------------
+    function reinitialiserFiltres() {
+      document.getElementById('filterPrice').value = '';
+      document.getElementById('filterDistance').value = '';
+      document.getElementById('filterCategory').value = '';
+      document.getElementById('filterRating').value = '';
+    }
+
+    // ---------------------------------------------------
+    // Affiche uniquement l'élément demandé, cache les autres
+    // @param {string} elementId - ID de l'élément à afficher
+    // ---------------------------------------------------
+    function showOnly(elementId) {
+      const ids = ['emptyState', 'loadingState', 'errorState', 'resultsTitle'];
+      ids.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById('restaurantGrid').style.display = 'none';
+      document.getElementById(elementId).style.display = 'flex';
+    }
+
+    // Recherche en appuyant sur Entrée
+    document.getElementById('searchInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') lancerRecherche();
+    });
+
+  </script>
+</body>
+</html>
