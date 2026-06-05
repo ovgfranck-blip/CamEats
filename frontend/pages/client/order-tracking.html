@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Suivi de commande</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/client.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar__logo">🍽️ CamEats</a>
+    <a href="search.html" class="navbar__back">← Accueil</a>
+  </nav>
+
+  <main class="tracking-main">
+
+    <!-- NUMÉRO DE COMMANDE -->
+    <div class="tracking-header">
+      <h1 class="tracking-header__title">Suivi de commande</h1>
+      <p class="tracking-header__number">Commande <strong id="orderNumber">#...</strong></p>
+      <p class="tracking-header__eta">Temps estimé : <strong id="orderEta">--</strong></p>
+    </div>
+
+    <!-- ÉTAPES DU STATUT -->
+    <div class="tracking-steps">
+
+      <div class="tracking-step" id="step-confirmed">
+        <div class="tracking-step__icon">✅</div>
+        <div class="tracking-step__info">
+          <p class="tracking-step__label">Commande confirmée</p>
+          <p class="tracking-step__desc">Le restaurant a reçu ta commande</p>
+        </div>
+      </div>
+
+      <div class="tracking-step tracking-step--inactive" id="step-preparing">
+        <div class="tracking-step__icon">👨‍🍳</div>
+        <div class="tracking-step__info">
+          <p class="tracking-step__label">En préparation</p>
+          <p class="tracking-step__desc">Le cuisinier prépare ton plat</p>
+        </div>
+      </div>
+
+      <div class="tracking-step tracking-step--inactive" id="step-pickup">
+        <div class="tracking-step__icon">🛵</div>
+        <div class="tracking-step__info">
+          <p class="tracking-step__label">Livreur en route</p>
+          <p class="tracking-step__desc">Le livreur a récupéré ta commande</p>
+        </div>
+      </div>
+
+      <div class="tracking-step tracking-step--inactive" id="step-nearby">
+        <div class="tracking-step__icon">📍</div>
+        <div class="tracking-step__info">
+          <p class="tracking-step__label">Livreur à proximité</p>
+          <p class="tracking-step__desc">Plus que quelques minutes !</p>
+        </div>
+      </div>
+
+      <div class="tracking-step tracking-step--inactive" id="step-delivered">
+        <div class="tracking-step__icon">🎉</div>
+        <div class="tracking-step__info">
+          <p class="tracking-step__label">Commande livrée</p>
+          <p class="tracking-step__desc">Bon appétit !</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CARTE LIVREUR -->
+    <div class="tracking-card" id="driverCard" style="display:none;">
+      <h3 class="tracking-card__title">Ton livreur</h3>
+      <div class="tracking-card__driver">
+        <div class="tracking-card__avatar">🛵</div>
+        <div class="tracking-card__info">
+          <p class="tracking-card__name" id="driverName">--</p>
+          <p class="tracking-card__phone" id="driverPhone">--</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOUTON NOTER -->
+    <div id="ratingSection" style="display:none;">
+      <a href="rating.html" class="btn-primary tracking-btn-rate">
+        ⭐ Noter ma commande
+      </a>
+    </div>
+
+  </main>
+
+  <script src="../../js/client.js"></script>
+  <script>
+
+    // Récupérer l'ID de commande depuis l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('order');
+
+    // Correspondance statut API → étape visuelle
+    const statusMap = {
+      'confirmed': 'step-confirmed',
+      'preparing': 'step-preparing',
+      'picked_up': 'step-pickup',
+      'nearby': 'step-nearby',
+      'delivered': 'step-delivered'
+    };
+
+    // ---------------------------------------------------
+    // Charge le statut de la commande depuis l'API de Nadia
+    // Appelé toutes les 10 secondes pour le temps réel
+    // ---------------------------------------------------
+    async function chargerStatutCommande() {
+      if (!orderId) return;
+
+      try {
+        // Appel à l'API de Nadia : GET /api/orders/:id
+        const response = await fetch('/api/orders/' + orderId);
+
+        if (!response.ok) return;
+
+        const order = await response.json();
+
+        mettreAJourStatut(order);
+
+        // Arrêter le suivi si la commande est livrée
+        if (order.status === 'delivered') {
+          clearInterval(trackingInterval);
+          document.getElementById('ratingSection').style.display = 'block';
+        }
+
+      } catch (error) {
+        console.error('Erreur suivi commande :', error);
+      }
+    }
+
+    // ---------------------------------------------------
+    // Met à jour l'affichage des étapes selon le statut reçu
+    // @param {Object} order - Données de commande reçues de l'API
+    // ---------------------------------------------------
+    function mettreAJourStatut(order) {
+      // Afficher le numéro et temps estimé
+      document.getElementById('orderNumber').textContent = '#' + order.id;
+      document.getElementById('orderEta').textContent = order.eta + ' min';
+
+      // Activer les étapes jusqu'au statut actuel
+      const etapes = ['confirmed', 'preparing', 'picked_up', 'nearby', 'delivered'];
+      const indexActuel = etapes.indexOf(order.status);
+
+      etapes.forEach((etape, index) => {
+        const stepId = statusMap[etape];
+        const stepEl = document.getElementById(stepId);
+        if (index <= indexActuel) {
+          stepEl.classList.remove('tracking-step--inactive');
+          stepEl.classList.add('tracking-step--active');
+        }
+      });
+
+      // Afficher les infos du livreur si disponible
+      if (order.driver && order.status !== 'confirmed') {
+        document.getElementById('driverCard').style.display = 'block';
+        document.getElementById('driverName').textContent = order.driver.name;
+        document.getElementById('driverPhone').textContent = order.driver.phone;
+      }
+    }
+
+    // Lancer le suivi toutes les 10 secondes
+    chargerStatutCommande();
+    const trackingInterval = setInterval(chargerStatutCommande, 10000);
+
+  </script>
+</body>
+</html>
