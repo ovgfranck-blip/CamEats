@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Carte des restaurants</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet.js CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/client.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="search.html" class="navbar__logo">🍽️ CamEats</a>
+    <a href="search.html" class="navbar__back">← Retour</a>
+  </nav>
+
+  <div class="map-container">
+
+    <!-- PANNEAU GAUCHE : liste des restaurants -->
+    <div class="map-panel">
+      <h2 class="map-panel__title">Restaurants proches</h2>
+
+      <!-- Chargement -->
+      <div class="loading-state" id="loadingState">
+        <div class="empty-state__icon">⏳</div>
+        <p class="empty-state__text">Localisation en cours...</p>
+      </div>
+
+      <!-- Erreur -->
+      <div class="error-state" id="errorState" style="display:none;">
+        <div class="empty-state__icon">⚠️</div>
+        <p class="empty-state__text">Impossible de charger les restaurants.</p>
+      </div>
+
+      <!-- Liste -->
+      <div id="restaurantList"></div>
+
+    </div>
+
+    <!-- CARTE LEAFLET -->
+    <div id="map"></div>
+
+  </div>
+
+  <!-- Leaflet.js JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../../js/client.js"></script>
+  <script>
+
+    let carte = null;
+
+    // ---------------------------------------------------
+    // Initialise la carte Leaflet centrée sur Yaoundé
+    // ---------------------------------------------------
+    function initialiserCarte(lat, lng) {
+      carte = L.map('map').setView([lat, lng], 14);
+
+      // Fond de carte OpenStreetMap (gratuit)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(carte);
+
+      // Marqueur position de l'utilisateur
+      L.marker([lat, lng])
+        .addTo(carte)
+        .bindPopup('📍 Tu es ici')
+        .openPopup();
+    }
+
+    // ---------------------------------------------------
+    // Charge les restaurants proches depuis l'API de Nadia
+    // @param {number} lat - Latitude de l'utilisateur
+    // @param {number} lng - Longitude de l'utilisateur
+    // ---------------------------------------------------
+    async function chargerRestaurantsProches(lat, lng) {
+      try {
+        // Appel à l'API de Nadia : GET /api/restaurants/nearby
+        const response = await fetch(
+          '/api/restaurants/nearby?lat=' + lat + '&lng=' + lng
+        );
+
+        if (!response.ok) {
+          afficherEtat('errorState');
+          return;
+        }
+
+        const restaurants = await response.json();
+        afficherRestaurantsSurCarte(restaurants);
+
+      } catch (error) {
+        console.error('Erreur chargement restaurants :', error);
+        afficherEtat('errorState');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Affiche les restaurants sur la carte et dans le panneau
+    // @param {Array} restaurants - Liste reçue de l'API
+    // ---------------------------------------------------
+    function afficherRestaurantsSurCarte(restaurants) {
+      const list = document.getElementById('restaurantList');
+      list.innerHTML = '';
+
+      restaurants.forEach(restaurant => {
+        // Ajouter un marqueur sur la carte
+        const marqueur = L.marker([restaurant.lat, restaurant.lng])
+          .addTo(carte)
+          .bindPopup(`
+            <strong>${restaurant.name}</strong><br>
+            ★ ${restaurant.rating}<br>
+            🛵 ${formatPrice(restaurant.delivery_fee)}
+          `);
+
+        // Ajouter une carte dans le panneau
+        const card = document.createElement('div');
+        card.className = 'map-restaurant-card';
+        card.innerHTML = `
+          <div class="map-restaurant-card__info">
+            <p class="map-restaurant-card__name">${restaurant.name}</p>
+            <p class="map-restaurant-card__rating">★ ${restaurant.rating}</p>
+          </div>
+          <button
+            class="btn-primary map-restaurant-card__btn"
+            onclick="voirRestaurant('${restaurant.id}')">
+            Voir
+          </button>
+        `;
+
+        // Clic sur la carte → ouvrir le popup sur la carte
+        card.addEventListener('click', () => {
+          carte.setView([restaurant.lat, restaurant.lng], 16);
+          marqueur.openPopup();
+        });
+
+        list.appendChild(card);
+      });
+
+      afficherEtat('restaurantList');
+    }
+
+    // ---------------------------------------------------
+    // Redirige vers la page du restaurant choisi
+    // @param {string} restaurantId - ID du restaurant
+    // ---------------------------------------------------
+    function voirRestaurant(restaurantId) {
+      window.location.href = 'cart.html?restaurant=' + restaurantId;
+    }
+
+    // ---------------------------------------------------
+    // Affiche uniquement l'élément demandé, cache les autres
+    // @param {string} elementId - ID de l'élément à afficher
+    // ---------------------------------------------------
+    function afficherEtat(elementId) {
+      const ids = ['loadingState', 'errorState', 'restaurantList'];
+      ids.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById(elementId).style.display = 'flex';
+    }
+
+    // ---------------------------------------------------
+    // Récupère la position GPS de l'utilisateur
+    // et lance le chargement de la carte
+    // ---------------------------------------------------
+    function demarrer() {
+      if (!navigator.geolocation) {
+        // Fallback : centrer sur Yaoundé si GPS non disponible
+        initialiserCarte(3.8480, 11.5021);
+        chargerRestaurantsProches(3.8480, 11.5021);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          initialiserCarte(lat, lng);
+          chargerRestaurantsProches(lat, lng);
+        },
+        function() {
+          // GPS refusé : fallback sur Yaoundé
+          initialiserCarte(3.8480, 11.5021);
+          chargerRestaurantsProches(3.8480, 11.5021);
+        }
+      );
+    }
+
+    // Démarrer au chargement de la page
+    demarrer();
+
+  </script>
+</body>
+</html>
