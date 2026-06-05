@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Mon menu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/restaurant.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar__logo">🍽️ CamEats</a>
+    <span class="navbar__role">Espace Restaurant</span>
+  </nav>
+
+  <div class="restaurant-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="sidebar__link">📊 Tableau de bord</a>
+      <a href="menu.html" class="sidebar__link sidebar__link--active">🍽️ Mon menu</a>
+      <a href="orders.html" class="sidebar__link">📦 Commandes</a>
+      <a href="stock.html" class="sidebar__link">📋 Stock</a>
+      <a href="profile.html" class="sidebar__link">⚙️ Profil</a>
+    </aside>
+
+    <main class="restaurant-main">
+
+      <div class="menu-header">
+        <h1 class="restaurant-title">Mon menu</h1>
+        <button class="btn-primary" onclick="ouvrirFormulaireAjout()">+ Ajouter un plat</button>
+      </div>
+
+      <!-- CHARGEMENT -->
+      <div class="loading-state" id="loadingState">
+        <div class="empty-state__icon">⏳</div>
+        <p class="empty-state__text">Chargement du menu...</p>
+      </div>
+
+      <!-- ERREUR -->
+      <div class="error-state" id="errorState" style="display:none;">
+        <div class="empty-state__icon">⚠️</div>
+        <p class="empty-state__text">Impossible de charger le menu. Réessaie plus tard.</p>
+      </div>
+
+      <!-- LISTE DES PLATS -->
+      <div id="menuList" style="display:none;"></div>
+
+      <!-- FORMULAIRE AJOUT/MODIFICATION -->
+      <div class="form-overlay" id="formOverlay" style="display:none;">
+        <div class="form-modal">
+          <h2 class="form-modal__title" id="formTitle">Ajouter un plat</h2>
+
+          <div class="form-group">
+            <label class="form-group__label">Nom du plat</label>
+            <input type="text" id="inputNom" class="form-group__input" placeholder="Ex : Ndolé, Poulet DG..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Catégorie</label>
+            <select id="inputCategorie" class="form-group__select">
+              <option value="local">Plats locaux</option>
+              <option value="grillade">Grillades</option>
+              <option value="boisson">Boissons</option>
+              <option value="dessert">Desserts</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Prix (FCFA)</label>
+            <input type="number" id="inputPrix" class="form-group__input" placeholder="Ex : 2500" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Photo du plat</label>
+            <input type="file" id="inputPhoto" class="form-group__input" accept="image/*" />
+            <div id="photoPreview" class="photo-preview" style="display:none;">
+              <img id="photoImg" class="photo-preview__img" src="" alt="Aperçu" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Description</label>
+            <textarea id="inputDescription" class="form-group__textarea" placeholder="Décris ton plat..." rows="3"></textarea>
+          </div>
+
+          <div class="form-modal__buttons">
+            <button class="btn-secondary" onclick="fermerFormulaire()">Annuler</button>
+            <button class="btn-primary" onclick="sauvegarderPlat()">Sauvegarder</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+
+    let platEnEdition = null;
+
+    // ---------------------------------------------------
+    // Affiche l'aperçu de la photo sélectionnée
+    // ---------------------------------------------------
+    document.getElementById('inputPhoto').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('photoImg').src = e.target.result;
+        document.getElementById('photoPreview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ---------------------------------------------------
+    // Charge la liste des plats depuis l'API de Nadia
+    // ---------------------------------------------------
+    async function chargerMenu() {
+      try {
+        const response = await fetch('/api/restaurant/menu');
+        if (!response.ok) {
+          afficherEtat('errorState');
+          return;
+        }
+        const plats = await response.json();
+        afficherMenu(plats);
+      } catch (error) {
+        console.error('Erreur chargement menu :', error);
+        afficherEtat('errorState');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Affiche la liste des plats du menu
+    // @param {Array} plats - Liste des plats reçue de l'API
+    // ---------------------------------------------------
+    function afficherMenu(plats) {
+      const list = document.getElementById('menuList');
+      list.innerHTML = '';
+      plats.forEach(plat => {
+        list.appendChild(buildPlatCard(plat));
+      });
+      afficherEtat('menuList');
+    }
+
+    // ---------------------------------------------------
+    // Construit une carte plat
+    // @param {Object} plat - Données du plat
+    // ---------------------------------------------------
+    function buildPlatCard(plat) {
+      const card = document.createElement('div');
+      card.className = 'menu-card';
+      card.innerHTML = `
+        ${plat.photo ? `<img src="${plat.photo}" class="menu-card__photo" alt="${plat.name}" />` : '<div class="menu-card__photo-placeholder">🍽️</div>'}
+        <div class="menu-card__info">
+          <p class="menu-card__name">${plat.name}</p>
+          <p class="menu-card__category">${plat.category}</p>
+          <p class="menu-card__price">${formatPrice(plat.price)}</p>
+        </div>
+        <div class="menu-card__actions">
+          <button class="btn-secondary menu-card__btn" onclick='ouvrirFormulaireModif(${JSON.stringify(plat)})'>
+            ✏️ Modifier
+          </button>
+          <button class="btn-danger menu-card__btn" onclick="supprimerPlat('${plat.id}')">
+            🗑️ Supprimer
+          </button>
+        </div>
+      `;
+      return card;
+    }
+
+    // ---------------------------------------------------
+    // Ouvre le formulaire pour ajouter un nouveau plat
+    // ---------------------------------------------------
+    function ouvrirFormulaireAjout() {
+      platEnEdition = null;
+      document.getElementById('formTitle').textContent = 'Ajouter un plat';
+      document.getElementById('inputNom').value = '';
+      document.getElementById('inputPrix').value = '';
+      document.getElementById('inputDescription').value = '';
+      document.getElementById('inputPhoto').value = '';
+      document.getElementById('photoPreview').style.display = 'none';
+      document.getElementById('formOverlay').style.display = 'flex';
+    }
+
+    // ---------------------------------------------------
+    // Ouvre le formulaire pour modifier un plat existant
+    // @param {Object} plat - Données du plat à modifier
+    // ---------------------------------------------------
+    function ouvrirFormulaireModif(plat) {
+      platEnEdition = plat;
+      document.getElementById('formTitle').textContent = 'Modifier le plat';
+      document.getElementById('inputNom').value = plat.name;
+      document.getElementById('inputPrix').value = plat.price;
+      document.getElementById('inputDescription').value = plat.description || '';
+      document.getElementById('inputCategorie').value = plat.category;
+      if (plat.photo) {
+        document.getElementById('photoImg').src = plat.photo;
+        document.getElementById('photoPreview').style.display = 'block';
+      } else {
+        document.getElementById('photoPreview').style.display = 'none';
+      }
+      document.getElementById('formOverlay').style.display = 'flex';
+    }
+
+    // ---------------------------------------------------
+    // Ferme le formulaire
+    // ---------------------------------------------------
+    function fermerFormulaire() {
+      document.getElementById('formOverlay').style.display = 'none';
+      platEnEdition = null;
+    }
+
+    // ---------------------------------------------------
+    // Sauvegarde un plat (ajout ou modification)
+    // ---------------------------------------------------
+    async function sauvegarderPlat() {
+      const nom = document.getElementById('inputNom').value.trim();
+      const prix = document.getElementById('inputPrix').value.trim();
+      const description = document.getElementById('inputDescription').value.trim();
+      const categorie = document.getElementById('inputCategorie').value;
+      const photoFile = document.getElementById('inputPhoto').files[0];
+
+      if (!nom || !prix) {
+        alert('Le nom et le prix sont obligatoires.');
+        return;
+      }
+
+      // Utiliser FormData pour envoyer la photo avec les données
+      const formData = new FormData();
+      formData.append('name', nom);
+      formData.append('price', prix);
+      formData.append('description', description);
+      formData.append('category', categorie);
+      if (photoFile) {
+        formData.append('photo', photoFile);
+      }
+
+      try {
+        let response;
+        if (platEnEdition) {
+          // Modification : PUT /api/restaurant/menu/:id
+          response = await fetch('/api/restaurant/menu/' + platEnEdition.id, {
+            method: 'PUT',
+            body: formData
+          });
+        } else {
+          // Ajout : POST /api/restaurant/menu
+          response = await fetch('/api/restaurant/menu', {
+            method: 'POST',
+            body: formData
+          });
+        }
+
+        if (!response.ok) {
+          alert('Erreur lors de la sauvegarde. Réessaie.');
+          return;
+        }
+
+        fermerFormulaire();
+        chargerMenu();
+
+      } catch (error) {
+        console.error('Erreur sauvegarde plat :', error);
+        alert('Impossible de contacter le serveur.');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Supprime un plat du menu
+    // @param {string} platId - ID du plat à supprimer
+    // ---------------------------------------------------
+    async function supprimerPlat(platId) {
+      if (!confirm('Supprimer ce plat ?')) return;
+      try {
+        const response = await fetch('/api/restaurant/menu/' + platId, {
+          method: 'DELETE'
+        });
+        if (!response.ok) {
+          alert('Erreur lors de la suppression.');
+          return;
+        }
+        chargerMenu();
+      } catch (error) {
+        console.error('Erreur suppression plat :', error);
+        alert('Impossible de contacter le serveur.');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Formate un prix en FCFA
+    // @param {number} amount - Montant à formater
+    // ---------------------------------------------------
+    function formatPrice(amount) {
+      return amount.toLocaleString('fr-FR') + ' FCFA';
+    }
+
+    // ---------------------------------------------------
+    // Affiche uniquement l'élément demandé, cache les autres
+    // @param {string} elementId - ID de l'élément à afficher
+    // ---------------------------------------------------
+    function afficherEtat(elementId) {
+      const ids = ['loadingState', 'errorState', 'menuList'];
+      ids.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById(elementId).style.display = 'block';
+    }
+
+    chargerMenu();
+
+  </script>
+</body>
+</html>
