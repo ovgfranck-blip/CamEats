@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Historique des commandes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/client.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="search.html" class="navbar__logo">🍽️ CamEats</a>
+    <a href="search.html" class="navbar__back">← Accueil</a>
+  </nav>
+
+  <main class="history-main">
+
+    <h1 class="history-title">Mes commandes</h1>
+
+    <!-- Chargement -->
+    <div class="loading-state" id="loadingState">
+      <div class="empty-state__icon">⏳</div>
+      <p class="empty-state__text">Chargement de tes commandes...</p>
+    </div>
+
+    <!-- Aucune commande -->
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="empty-state__icon">📋</div>
+      <p class="empty-state__text">Tu n'as pas encore passé de commande</p>
+      <a href="search.html" class="btn-primary" style="text-decoration:none; text-align:center;">
+        Commander maintenant
+      </a>
+    </div>
+
+    <!-- Erreur -->
+    <div class="error-state" id="errorState" style="display:none;">
+      <div class="empty-state__icon">⚠️</div>
+      <p class="empty-state__text">Impossible de charger tes commandes. Réessaie plus tard.</p>
+    </div>
+
+    <!-- Liste des commandes -->
+    <div id="ordersList"></div>
+
+  </main>
+
+  <script src="../../js/client.js"></script>
+  <script>
+
+    // ---------------------------------------------------
+    // Charge l'historique des commandes depuis l'API de Nadia
+    // ---------------------------------------------------
+    async function chargerHistorique() {
+      try {
+        // Appel à l'API de Nadia : GET /api/orders/history
+        const response = await fetch('/api/orders/history');
+
+        if (!response.ok) {
+          afficherEtat('errorState');
+          return;
+        }
+
+        const commandes = await response.json();
+
+        if (commandes.length === 0) {
+          afficherEtat('emptyState');
+          return;
+        }
+
+        afficherCommandes(commandes);
+
+      } catch (error) {
+        console.error('Erreur chargement historique :', error);
+        afficherEtat('errorState');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Affiche la liste des commandes passées
+    // @param {Array} commandes - Liste reçue de l'API
+    // ---------------------------------------------------
+    function afficherCommandes(commandes) {
+      const list = document.getElementById('ordersList');
+      list.innerHTML = '';
+
+      commandes.forEach(commande => {
+        list.appendChild(buildOrderCard(commande));
+      });
+
+      afficherEtat('ordersList');
+    }
+
+    // ---------------------------------------------------
+    // Construit une carte de commande passée
+    // @param {Object} commande - Données de la commande
+    // ---------------------------------------------------
+    function buildOrderCard(commande) {
+      const card = document.createElement('div');
+      card.className = 'order-card';
+
+      card.innerHTML = `
+        <div class="order-card__header">
+          <div>
+            <p class="order-card__number">Commande #${commande.id}</p>
+            <p class="order-card__date">${commande.date}</p>
+          </div>
+          <span class="order-card__status order-card__status--${commande.status}">
+            ${getStatusLabel(commande.status)}
+          </span>
+        </div>
+
+        <div class="order-card__items">
+          ${commande.items.map(item => `
+            <div class="order-card__item">
+              <span class="order-card__item-name">${item.dishName}</span>
+              <span class="order-card__item-price">${formatPrice(item.price)}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="order-card__footer">
+          <span class="order-card__total">Total : ${formatPrice(commande.total)}</span>
+          <button
+            class="btn-primary order-card__btn-reorder"
+            onclick="recommander(${commande.id})">
+            🔁 Recommander
+          </button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // ---------------------------------------------------
+    // Retourne le label lisible du statut
+    // @param {string} status - Statut de la commande
+    // ---------------------------------------------------
+    function getStatusLabel(status) {
+      const labels = {
+        'delivered': '✅ Livrée',
+        'cancelled': '❌ Annulée',
+        'preparing': '👨‍🍳 En cours'
+      };
+      return labels[status] || status;
+    }
+
+    // ---------------------------------------------------
+    // Recommande les mêmes plats d'une commande passée
+    // @param {number} orderId - ID de la commande à reproduire
+    // ---------------------------------------------------
+    async function recommander(orderId) {
+      try {
+        // Appel à l'API de Nadia : POST /api/orders/:id/reorder
+        const response = await fetch('/api/orders/' + orderId + '/reorder', {
+          method: 'POST'
+        });
+
+        if (!response.ok) {
+          alert('Erreur lors de la commande. Réessaie.');
+          return;
+        }
+
+        window.location.href = 'cart.html';
+
+      } catch (error) {
+        console.error('Erreur recommander :', error);
+        alert('Impossible de contacter le serveur. Réessaie plus tard.');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Affiche uniquement l'élément demandé, cache les autres
+    // @param {string} elementId - ID de l'élément à afficher
+    // ---------------------------------------------------
+    function afficherEtat(elementId) {
+      const ids = ['loadingState', 'emptyState', 'errorState', 'ordersList'];
+      ids.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById(elementId).style.display = 'flex';
+    }
+
+    // Charger l'historique au démarrage
+    chargerHistorique();
+
+  </script>
+</body>
+</html>

@@ -1112,3 +1112,132 @@
     font-size: 32px;
   }
 }
+/* ---- HISTORIQUE COMMANDES ---- */
+.history-main {
+  max-width: 700px;
+  margin: var(--spacing-xl) auto;
+  padding: 0 var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.history-title {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* ---- CARTE COMMANDE ---- */
+.order-card {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.order-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.order-card__number {
+  font-family: var(--font-title);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.order-card__date {
+  font-size: 12px;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+.order-card__status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+}
+
+.order-card__status--delivered {
+  background-color: #f0fdf4;
+  color: var(--color-success);
+}
+
+.order-card__status--cancelled {
+  background-color: #fff5f5;
+  color: var(--color-error);
+}
+
+.order-card__status--preparing {
+  background-color: #fff8f0;
+  color: var(--color-primary);
+}
+
+.order-card__items {
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.order-card__item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.order-card__item-name {
+  color: var(--color-text);
+}
+
+.order-card__item-price {
+  color: var(--color-text-light);
+}
+
+.order-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-light);
+}
+
+.order-card__total {
+  font-family: var(--font-title);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.order-card__btn-reorder {
+  font-size: 13px;
+  padding: var(--spacing-xs) var(--spacing-md);
+}
+
+/* ---- RESPONSIVE MOBILE HISTORIQUE ---- */
+@media (max-width: 600px) {
+  .history-main {
+    padding: 0 var(--spacing-md);
+    margin-top: var(--spacing-lg);
+  }
+
+  .order-card__footer {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: flex-start;
+  }
+
+  .order-card__btn-reorder {
+    width: 100%;
+    text-align: center;
+  }
+}
