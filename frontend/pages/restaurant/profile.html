@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Profil du restaurant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/restaurant.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar__logo">🍽️ CamEats</a>
+    <span class="navbar__role">Espace Restaurant</span>
+  </nav>
+
+  <div class="restaurant-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="sidebar__link">📊 Tableau de bord</a>
+      <a href="menu.html" class="sidebar__link">🍽️ Mon menu</a>
+      <a href="orders.html" class="sidebar__link">📦 Commandes</a>
+      <a href="stock.html" class="sidebar__link">📋 Stock</a>
+      <a href="profile.html" class="sidebar__link sidebar__link--active">⚙️ Profil</a>
+    </aside>
+
+    <main class="restaurant-main">
+
+      <h1 class="restaurant-title">Profil du restaurant</h1>
+
+      <!-- CHARGEMENT -->
+      <div class="loading-state" id="loadingState">
+        <div class="empty-state__icon">⏳</div>
+        <p class="empty-state__text">Chargement du profil...</p>
+      </div>
+
+      <!-- ERREUR -->
+      <div class="error-state" id="errorState" style="display:none;">
+        <div class="empty-state__icon">⚠️</div>
+        <p class="empty-state__text">Impossible de charger le profil. Réessaie plus tard.</p>
+      </div>
+
+      <!-- FORMULAIRE PROFIL -->
+      <div id="profileForm" style="display:none;">
+
+        <!-- PHOTO DU RESTAURANT -->
+        <div class="profile-photo-section">
+          <div class="profile-photo" id="profilePhotoPreview">🍽️</div>
+          <div class="profile-photo-info">
+            <p class="profile-photo-label">Photo du restaurant</p>
+            <input type="file" id="inputPhoto" accept="image/*" class="form-group__input" />
+          </div>
+        </div>
+
+        <!-- INFORMATIONS GÉNÉRALES -->
+        <h2 class="section-title">Informations générales</h2>
+
+        <div class="profile-grid">
+          <div class="form-group">
+            <label class="form-group__label">Nom du restaurant</label>
+            <input type="text" id="inputNom" class="form-group__input" placeholder="Ex : Chez Mama Africa" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Catégorie</label>
+            <select id="inputCategorie" class="form-group__select">
+              <option value="local">Cuisine locale</option>
+              <option value="grillade">Grillades</option>
+              <option value="fastfood">Fast food</option>
+              <option value="mixte">Mixte</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Téléphone</label>
+            <input type="tel" id="inputTelephone" class="form-group__input" placeholder="Ex : +237 6XX XXX XXX" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-group__label">Adresse</label>
+            <input type="text" id="inputAdresse" class="form-group__input" placeholder="Ex : Bastos, Yaoundé" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-group__label">Description</label>
+          <textarea id="inputDescription" class="form-group__textarea" rows="3" placeholder="Décris ton restaurant..."></textarea>
+        </div>
+
+        <!-- HORAIRES -->
+        <h2 class="section-title">Horaires d'ouverture</h2>
+
+        <div class="horaires-grid">
+          <div class="horaire-row">
+            <span class="horaire-row__jour">Lundi — Vendredi</span>
+            <input type="time" id="ouvertureSemai" class="horaire-row__input" value="08:00" />
+            <span>à</span>
+            <input type="time" id="fermetureSemai" class="horaire-row__input" value="22:00" />
+          </div>
+          <div class="horaire-row">
+            <span class="horaire-row__jour">Samedi</span>
+            <input type="time" id="ouvertureSam" class="horaire-row__input" value="09:00" />
+            <span>à</span>
+            <input type="time" id="fermetureSam" class="horaire-row__input" value="23:00" />
+          </div>
+          <div class="horaire-row">
+            <span class="horaire-row__jour">Dimanche</span>
+            <input type="time" id="ouvertureDim" class="horaire-row__input" value="10:00" />
+            <span>à</span>
+            <input type="time" id="fermetureDim" class="horaire-row__input" value="21:00" />
+          </div>
+        </div>
+
+        <!-- BOUTON SAUVEGARDER -->
+        <div class="profile-save">
+          <button class="btn-primary profile-save__btn" onclick="sauvegarderProfil()">
+            Sauvegarder les modifications
+          </button>
+        </div>
+
+        <!-- MESSAGE SUCCÈS -->
+        <div class="profile-success" id="profileSuccess" style="display:none;">
+          ✅ Profil mis à jour avec succès !
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+
+    // ---------------------------------------------------
+    // Charge le profil du restaurant depuis l'API de Nadia
+    // ---------------------------------------------------
+    async function chargerProfil() {
+      try {
+        // Appel à l'API de Nadia : GET /api/restaurant/profile
+        const response = await fetch('/api/restaurant/profile');
+
+        if (!response.ok) {
+          afficherEtat('errorState');
+          return;
+        }
+
+        const profil = await response.json();
+        remplirFormulaire(profil);
+
+      } catch (error) {
+        console.error('Erreur chargement profil :', error);
+        afficherEtat('errorState');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Remplit le formulaire avec les données du profil
+    // @param {Object} profil - Données du profil reçues de l'API
+    // ---------------------------------------------------
+    function remplirFormulaire(profil) {
+      document.getElementById('inputNom').value = profil.name || '';
+      document.getElementById('inputCategorie').value = profil.category || 'local';
+      document.getElementById('inputTelephone').value = profil.phone || '';
+      document.getElementById('inputAdresse').value = profil.address || '';
+      document.getElementById('inputDescription').value = profil.description || '';
+
+      if (profil.photo) {
+        const preview = document.getElementById('profilePhotoPreview');
+        preview.innerHTML = `<img src="${profil.photo}" class="profile-photo__img" alt="Photo du restaurant" />`;
+      }
+
+      if (profil.hours) {
+        document.getElementById('ouvertureSemai').value = profil.hours.weekday_open || '08:00';
+        document.getElementById('fermetureSemai').value = profil.hours.weekday_close || '22:00';
+        document.getElementById('ouvertureSam').value = profil.hours.saturday_open || '09:00';
+        document.getElementById('fermetureSam').value = profil.hours.saturday_close || '23:00';
+        document.getElementById('ouvertureDim').value = profil.hours.sunday_open || '10:00';
+        document.getElementById('fermetureDim').value = profil.hours.sunday_close || '21:00';
+      }
+
+      afficherEtat('profileForm');
+    }
+
+    // ---------------------------------------------------
+    // Sauvegarde le profil du restaurant
+    // ---------------------------------------------------
+    async function sauvegarderProfil() {
+      const formData = new FormData();
+      formData.append('name', document.getElementById('inputNom').value.trim());
+      formData.append('category', document.getElementById('inputCategorie').value);
+      formData.append('phone', document.getElementById('inputTelephone').value.trim());
+      formData.append('address', document.getElementById('inputAdresse').value.trim());
+      formData.append('description', document.getElementById('inputDescription').value.trim());
+      formData.append('hours', JSON.stringify({
+        weekday_open: document.getElementById('ouvertureSemai').value,
+        weekday_close: document.getElementById('fermetureSemai').value,
+        saturday_open: document.getElementById('ouvertureSam').value,
+        saturday_close: document.getElementById('fermetureSam').value,
+        sunday_open: document.getElementById('ouvertureDim').value,
+        sunday_close: document.getElementById('fermetureDim').value
+      }));
+
+      const photoFile = document.getElementById('inputPhoto').files[0];
+      if (photoFile) {
+        formData.append('photo', photoFile);
+      }
+
+      try {
+        // Appel à l'API de Nadia : PUT /api/restaurant/profile
+        const response = await fetch('/api/restaurant/profile', {
+          method: 'PUT',
+          body: formData
+        });
+
+        if (!response.ok) {
+          alert('Erreur lors de la sauvegarde. Réessaie.');
+          return;
+        }
+
+        // Afficher le message de succès
+        const success = document.getElementById('profileSuccess');
+        success.style.display = 'block';
+        setTimeout(() => { success.style.display = 'none'; }, 3000);
+
+      } catch (error) {
+        console.error('Erreur sauvegarde profil :', error);
+        alert('Impossible de contacter le serveur.');
+      }
+    }
+
+    // Aperçu de la photo sélectionnée
+    document.getElementById('inputPhoto').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('profilePhotoPreview').innerHTML =
+          `<img src="${e.target.result}" class="profile-photo__img" alt="Aperçu" />`;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ---------------------------------------------------
+    // Affiche uniquement l'élément demandé, cache les autres
+    // @param {string} elementId - ID de l'élément à afficher
+    // ---------------------------------------------------
+    function afficherEtat(elementId) {
+      const ids = ['loadingState', 'errorState', 'profileForm'];
+      ids.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById(elementId).style.display =
+        elementId === 'profileForm' ? 'block' : 'flex';
+    }
+
+    chargerProfil();
+
+  </script>
+</body>
+</html>

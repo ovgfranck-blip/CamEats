@@ -707,3 +707,133 @@
     justify-content: space-between;
   }
 }
+/* ---- PROFIL RESTAURANT ---- */
+.profile-photo-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.profile-photo {
+  width: 100px;
+  height: 100px;
+  background-color: var(--color-light);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profile-photo__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-photo-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ---- GRILLE PROFIL ---- */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ---- HORAIRES ---- */
+.horaires-grid {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.horaire-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.horaire-row__jour {
+  font-size: 14px;
+  color: var(--color-text);
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.horaire-row__input {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-text);
+  outline: none;
+}
+
+.horaire-row__input:focus {
+  border-color: var(--color-primary);
+}
+
+/* ---- BOUTON SAUVEGARDER ---- */
+.profile-save {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+}
+
+.profile-save__btn {
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.profile-success {
+  margin-top: var(--spacing-md);
+  text-align: right;
+  color: var(--color-success);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---- RESPONSIVE MOBILE PROFIL ---- */
+@media (max-width: 600px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .horaire-row {
+    flex-wrap: wrap;
+  }
+
+  .horaire-row__jour {
+    width: 100%;
+  }
+
+  .profile-save {
+    justify-content: stretch;
+  }
+
+  .profile-save__btn {
+    width: 100%;
+    text-align: center;
+  }
+}
