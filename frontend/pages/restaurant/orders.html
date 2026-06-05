@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Commandes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/restaurant.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar__logo">🍽️ CamEats</a>
+    <span class="navbar__role">Espace Restaurant</span>
+  </nav>
+
+  <div class="restaurant-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="sidebar__link">📊 Tableau de bord</a>
+      <a href="menu.html" class="sidebar__link">🍽️ Mon menu</a>
+      <a href="orders.html" class="sidebar__link sidebar__link--active">📦 Commandes</a>
+      <a href="stock.html" class="sidebar__link">📋 Stock</a>
+      <a href="profile.html" class="sidebar__link">⚙️ Profil</a>
+    </aside>
+
+    <main class="restaurant-main">
+
+      <h1 class="restaurant-title">Commandes</h1>
+
+      <!-- FILTRES STATUT -->
+      <div class="orders-filters">
+        <button class="filter-btn filter-btn--active" onclick="filtrerCommandes('all')">Toutes</button>
+        <button class="filter-btn" onclick="filtrerCommandes('confirmed')">✅ Confirmées</button>
+        <button class="filter-btn" onclick="filtrerCommandes('preparing')">👨‍🍳 En préparation</button>
+        <button class="filter-btn" onclick="filtrerCommandes('picked_up')">🛵 En livraison</button>
+        <button class="filter-btn" onclick="filtrerCommandes('delivered')">🎉 Livrées</button>
+      </div>
+
+      <!-- CHARGEMENT -->
+      <div class="loading-state" id="loadingState">
+        <div class="empty-state__icon">⏳</div>
+        <p class="empty-state__text">Chargement des commandes...</p>
+      </div>
+
+      <!-- ERREUR -->
+      <div class="error-state" id="errorState" style="display:none;">
+        <div class="empty-state__icon">⚠️</div>
+        <p class="empty-state__text">Impossible de charger les commandes. Réessaie plus tard.</p>
+      </div>
+
+      <!-- AUCUNE COMMANDE -->
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="empty-state__icon">📦</div>
+        <p class="empty-state__text">Aucune commande pour le moment.</p>
+      </div>
+
+      <!-- LISTE DES COMMANDES -->
+      <div id="ordersList" style="display:none;"></div>
+
+    </main>
+  </div>
+
+  <script>
+
+    let toutesLesCommandes = [];
+
+    // ---------------------------------------------------
+    // Charge les commandes depuis l'API de Nadia
+    // ---------------------------------------------------
+    async function chargerCommandes() {
+      try {
+        // Appel à l'API de Nadia : GET /api/restaurant/orders
+        const response = await fetch('/api/restaurant/orders');
+
+        if (!response.ok) {
+          afficherEtat('errorState');
+          return;
+        }
+
+        toutesLesCommandes = await response.json();
+        afficherCommandes(toutesLesCommandes);
+
+      } catch (error) {
+        console.error('Erreur chargement commandes :', error);
+        afficherEtat('errorState');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Filtre les commandes par statut
+    // @param {string} statut - Statut à filtrer ('all' pour tout)
+    // ---------------------------------------------------
+    function filtrerCommandes(statut) {
+      // Mettre à jour le bouton actif
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('filter-btn--active');
+      });
+      event.target.classList.add('filter-btn--active');
+
+      const filtrees = statut === 'all'
+        ? toutesLesCommandes
+        : toutesLesCommandes.filter(c => c.status === statut);
+
+      afficherCommandes(filtrees);
+    }
+
+    // ---------------------------------------------------
+    // Affiche la liste des commandes
+    // @param {Array} commandes - Liste des commandes à afficher
+    // ---------------------------------------------------
+    function afficherCommandes(commandes) {
+      const list = document.getElementById('ordersList');
+      list.innerHTML = '';
+
+      if (commandes.length === 0) {
+        afficherEtat('emptyState');
+        return;
+      }
+
+      commandes.forEach(commande => {
+        list.appendChild(buildOrderCard(commande));
+      });
+
+      afficherEtat('ordersList');
+    }
+
+    // ---------------------------------------------------
+    // Construit une carte commande
+    // @param {Object} commande - Données de la commande
+    // ---------------------------------------------------
+    function buildOrderCard(commande) {
+      const card = document.createElement('div');
+      card.className = 'order-card-restaurant';
+
+      card.innerHTML = `
+        <div class="order-card-restaurant__header">
+          <div>
+            <p class="order-card-restaurant__number">Commande #${commande.id}</p>
+            <p class="order-card-restaurant__date">${commande.date}</p>
+          </div>
+          <span class="order-row__status order-row__status--${commande.status}">
+            ${getStatusLabel(commande.status)}
+          </span>
+        </div>
+
+        <div class="order-card-restaurant__items">
+          ${commande.items.map(item => `
+            <div class="order-card-restaurant__item">
+              <span>${item.quantity}x ${item.dishName}</span>
+              <span>${formatPrice(item.price * item.quantity)}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="order-card-restaurant__footer">
+          <div class="order-card-restaurant__client">
+            <p>📍 ${commande.delivery_address}</p>
+          </div>
+          <div class="order-card-restaurant__actions">
+            ${buildStatutButtons(commande)}
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // ---------------------------------------------------
+    // Construit les boutons d'action selon le statut actuel
+    // @param {Object} commande - Données de la commande
+    // ---------------------------------------------------
+    function buildStatutButtons(commande) {
+      const transitions = {
+        'confirmed': { label: '👨‍🍳 Commencer la préparation', next: 'preparing' },
+        'preparing': { label: '✅ Prêt pour livraison', next: 'picked_up' },
+        'picked_up': { label: '🎉 Marquer comme livrée', next: 'delivered' },
+      };
+
+      const transition = transitions[commande.status];
+      if (!transition) return '';
+
+      return `
+        <button class="btn-primary order-card-restaurant__btn"
+          onclick="changerStatut('${commande.id}', '${transition.next}')">
+          ${transition.label}
+        </button>
+      `;
+    }
+
+    // ---------------------------------------------------
+    // Change le statut d'une commande
+    // @param {string} commandeId - ID de la commande
+    // @param {string} nouveauStatut - Nouveau statut à appliquer
+    // ---------------------------------------------------
+    async function changerStatut(commandeId, nouveauStatut) {
+      try {
+        // Appel à l'API de Nadia : PUT /api/restaurant/orders/:id/status
+        const response = await fetch('/api/restaurant/orders/' + commandeId + '/status', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: nouveauStatut })
+        });
+
+        if (!response.ok) {
+          alert('Erreur lors de la mise à jour. Réessaie.');
+          return;
+        }
+
+        // Recharger les commandes
+        chargerCommandes();
+
+      } catch (error) {
+        console.error('Erreur changement statut :', error);
+        alert('Impossible de contacter le serveur.');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Retourne le label lisible du statut
+    // @param {string} status - Statut de la commande
+    // ---------------------------------------------------
+    function getStatusLabel(status) {
+      const labels = {
+        'confirmed': '✅ Confirmée',
+        'preparing': '👨‍🍳 En préparation',
+        'picked_up': '🛵 En livraison',
+        'delivered': '🎉 Livrée',
+        'cancelled': '❌ Annulée'
+      };
+      return labels[status] || status;
+    }
+
+    // ---------------------------------------------------
+    // Formate un prix en FCFA
+    // @param {number} amount - Montant à formater
+    // ---------------------------------------------------
+    function formatPrice(amount) {
+      return amount.toLocaleString('fr-FR') + ' FCFA';
+    }
+
+    // ---------------------------------------------------
+    // Affiche uniquement l'élément demandé, cache les autres
+    // @param {string} elementId - ID de l'élément à afficher
+    // ---------------------------------------------------
+    function afficherEtat(elementId) {
+      const ids = ['loadingState', 'errorState', 'emptyState', 'ordersList'];
+      ids.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById(elementId).style.display =
+        elementId === 'ordersList' ? 'block' : 'flex';
+    }
+
+    // Recharger les commandes toutes les 30 secondes
+    chargerCommandes();
+    setInterval(chargerCommandes, 30000);
+
+  </script>
+</body>
+</html>
