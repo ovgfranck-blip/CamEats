@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Mon panier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/client.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="search.html" class="navbar__logo">🍽️ CamEats</a>
+    <a href="search.html" class="navbar__back">← Continuer mes achats</a>
+  </nav>
+
+  <main class="cart-main">
+
+    <!-- COLONNE GAUCHE : liste des plats -->
+    <div class="cart-left">
+      <h2 class="cart-title">Mon panier</h2>
+
+      <!-- État vide -->
+      <div class="empty-state" id="emptyCart">
+        <div class="empty-state__icon">🛒</div>
+        <p class="empty-state__text">Ton panier est vide</p>
+        <a href="search.html" class="btn-primary" style="text-decoration:none; text-align:center;">
+          Trouver un restaurant
+        </a>
+      </div>
+
+      <!-- Liste des plats (remplie par JS) -->
+      <div id="cartItems"></div>
+
+    </div>
+
+    <!-- COLONNE DROITE : résumé commande -->
+    <div class="cart-right" id="cartSummary" style="display:none;">
+
+      <h3 class="cart-summary__title">Résumé de la commande</h3>
+
+      <!-- Adresse de livraison -->
+      <div class="cart-section">
+        <label class="cart-section__label">📍 Adresse de livraison</label>
+        <input
+          type="text"
+          id="deliveryAddress"
+          class="cart-section__input"
+          placeholder="Ex : Bastos, Yaoundé..."
+          oninput="calculerPrixLivraison()"
+        />
+      </div>
+
+      <!-- Prix -->
+      <div class="cart-prices">
+        <div class="cart-price-row">
+          <span>Sous-total plats</span>
+          <span id="subtotal">0 FCFA</span>
+        </div>
+        <div class="cart-price-row">
+          <span>Frais de livraison</span>
+          <span id="deliveryFee">— FCFA</span>
+        </div>
+        <div class="cart-price-row cart-price-row--total">
+          <span>Total</span>
+          <span id="totalPrice">0 FCFA</span>
+        </div>
+      </div>
+
+      <!-- Choix du paiement -->
+      <div class="cart-section">
+        <label class="cart-section__label">💳 Mode de paiement</label>
+        <div class="payment-options">
+          <label class="payment-option">
+            <input type="radio" name="payment" value="mtn" />
+            <span>📱 MTN Mobile Money</span>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="payment" value="orange" />
+            <span>🟠 Orange Money</span>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="payment" value="cash" />
+            <span>💵 Payer à la livraison</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Bouton commander -->
+      <button class="btn-primary cart-btn-order" onclick="passerCommande()">
+        Commander — <span id="btnTotal">0 FCFA</span>
+      </button>
+
+    </div>
+
+  </main>
+
+  <script src="../../js/client.js"></script>
+  <script>
+
+    // ---------------------------------------------------
+    // Charge et affiche le contenu du panier depuis localStorage
+    // ---------------------------------------------------
+    function chargerPanier() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const cartItems = document.getElementById('cartItems');
+      const emptyCart = document.getElementById('emptyCart');
+      const cartSummary = document.getElementById('cartSummary');
+
+      if (cart.length === 0) {
+        emptyCart.style.display = 'flex';
+        cartSummary.style.display = 'none';
+        return;
+      }
+
+      emptyCart.style.display = 'none';
+      cartSummary.style.display = 'flex';
+      cartItems.innerHTML = '';
+
+      let subtotal = 0;
+
+      cart.forEach((item, index) => {
+        subtotal += item.price * item.quantity;
+        cartItems.appendChild(buildCartItem(item, index));
+      });
+
+      mettreAJourPrix(subtotal);
+    }
+
+    // ---------------------------------------------------
+    // Construit une ligne de plat dans le panier
+    // @param {Object} item - Plat dans le panier
+    // @param {number} index - Position dans le tableau
+    // ---------------------------------------------------
+    function buildCartItem(item, index) {
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+
+      div.innerHTML = `
+        <div class="cart-item__photo">🍽️</div>
+        <div class="cart-item__info">
+          <p class="cart-item__name">${item.dishName}</p>
+          <p class="cart-item__restaurant">${item.restaurantName}</p>
+          <p class="cart-item__price">${formatPrice(item.price)}</p>
+        </div>
+        <div class="cart-item__qty">
+          <button class="qty-btn" onclick="changerQuantite(${index}, -1)">−</button>
+          <span class="qty-value">${item.quantity}</span>
+          <button class="qty-btn" onclick="changerQuantite(${index}, +1)">+</button>
+        </div>
+        <button class="cart-item__remove" onclick="supprimerPlat(${index})">✕</button>
+      `;
+
+      return div;
+    }
+
+    // ---------------------------------------------------
+    // Change la quantité d'un plat dans le panier
+    // @param {number} index - Position du plat dans le panier
+    // @param {number} delta - +1 ou -1
+    // ---------------------------------------------------
+    function changerQuantite(index, delta) {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      cart[index].quantity += delta;
+      if (cart[index].quantity <= 0) {
+        cart.splice(index, 1);
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      chargerPanier();
+    }
+
+    // ---------------------------------------------------
+    // Supprime un plat du panier
+    // @param {number} index - Position du plat à supprimer
+    // ---------------------------------------------------
+    function supprimerPlat(index) {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      cart.splice(index, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      chargerPanier();
+    }
+
+    // ---------------------------------------------------
+    // Met à jour l'affichage des prix
+    // @param {number} subtotal - Sous-total des plats
+    // ---------------------------------------------------
+    function mettreAJourPrix(subtotal) {
+      document.getElementById('subtotal').textContent = formatPrice(subtotal);
+      document.getElementById('btnTotal').textContent = formatPrice(subtotal);
+      document.getElementById('totalPrice').textContent = formatPrice(subtotal);
+    }
+
+    // ---------------------------------------------------
+    // Calcule le prix de livraison selon l'adresse saisie
+    // (sera connecté à l'API de Nadia)
+    // ---------------------------------------------------
+    function calculerPrixLivraison() {
+      const address = document.getElementById('deliveryAddress').value.trim();
+      if (!address) return;
+
+      // À connecter à l'API de Nadia : GET /api/delivery-price?address=...
+      document.getElementById('deliveryFee').textContent = 'Calcul en cours...';
+    }
+
+    // ---------------------------------------------------
+    // Envoie la commande à l'API de Nadia
+    // ---------------------------------------------------
+    async function passerCommande() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const address = document.getElementById('deliveryAddress').value.trim();
+      const payment = document.querySelector('input[name="payment"]:checked');
+
+      if (!address) {
+        alert('Saisis ton adresse de livraison.');
+        return;
+      }
+
+      if (!payment) {
+        alert('Choisis un mode de paiement.');
+        return;
+      }
+
+      try {
+        // Appel à l'API de Nadia : POST /api/orders
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: cart,
+            delivery_address: address,
+            payment_method: payment.value
+          })
+        });
+
+        if (!response.ok) {
+          alert('Erreur lors de la commande. Réessaie.');
+          return;
+        }
+
+        const order = await response.json();
+
+        // Vider le panier et rediriger vers le suivi
+        localStorage.removeItem('cart');
+        window.location.href = 'order-tracking.html?order=' + order.id;
+
+      } catch (error) {
+        console.error('Erreur commande :', error);
+        alert('Impossible de contacter le serveur. Réessaie plus tard.');
+      }
+    }
+
+    // Charger le panier au démarrage
+    chargerPanier();
+
+  </script>
+</body>
+</html>
