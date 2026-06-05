@@ -575,3 +575,135 @@
     text-align: center;
   }
 }
+/* ---- STOCK ---- */
+.restaurant-subtitle {
+  font-size: 14px;
+  color: var(--color-text-light);
+  margin-top: -var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.stock-row {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.stock-row--unavailable {
+  opacity: 0.6;
+  background-color: var(--color-light);
+}
+
+.stock-row__info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.stock-row__photo {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.stock-row__photo-placeholder {
+  font-size: 32px;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-light);
+  border-radius: var(--radius-sm);
+}
+
+.stock-row__name {
+  font-family: var(--font-title);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.stock-row__category {
+  font-size: 12px;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+.stock-row__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.stock-row__label {
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+/* ---- TOGGLE SWITCH ---- */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle__slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: 0.3s;
+}
+
+.toggle__slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle input:checked + .toggle__slider {
+  background-color: var(--color-success);
+}
+
+.toggle input:checked + .toggle__slider:before {
+  transform: translateX(22px);
+}
+
+/* ---- RESPONSIVE MOBILE STOCK ---- */
+@media (max-width: 600px) {
+  .stock-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+
+  .stock-row__toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

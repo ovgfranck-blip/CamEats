@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Stock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/restaurant.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar__logo">🍽️ CamEats</a>
+    <span class="navbar__role">Espace Restaurant</span>
+  </nav>
+
+  <div class="restaurant-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="dashboard.html" class="sidebar__link">📊 Tableau de bord</a>
+      <a href="menu.html" class="sidebar__link">🍽️ Mon menu</a>
+      <a href="orders.html" class="sidebar__link">📦 Commandes</a>
+      <a href="stock.html" class="sidebar__link sidebar__link--active">📋 Stock</a>
+      <a href="profile.html" class="sidebar__link">⚙️ Profil</a>
+    </aside>
+
+    <main class="restaurant-main">
+
+      <h1 class="restaurant-title">Gestion du stock</h1>
+      <p class="restaurant-subtitle">Active ou désactive la disponibilité de tes plats</p>
+
+      <!-- CHARGEMENT -->
+      <div class="loading-state" id="loadingState">
+        <div class="empty-state__icon">⏳</div>
+        <p class="empty-state__text">Chargement du stock...</p>
+      </div>
+
+      <!-- ERREUR -->
+      <div class="error-state" id="errorState" style="display:none;">
+        <div class="empty-state__icon">⚠️</div>
+        <p class="empty-state__text">Impossible de charger le stock. Réessaie plus tard.</p>
+      </div>
+
+      <!-- LISTE DES PLATS -->
+      <div id="stockList" style="display:none;"></div>
+
+    </main>
+  </div>
+
+  <script>
+
+    // ---------------------------------------------------
+    // Charge la liste des plats et leur disponibilité
+    // ---------------------------------------------------
+    async function chargerStock() {
+      try {
+        // Appel à l'API de Nadia : GET /api/restaurant/menu
+        const response = await fetch('/api/restaurant/menu');
+
+        if (!response.ok) {
+          afficherEtat('errorState');
+          return;
+        }
+
+        const plats = await response.json();
+        afficherStock(plats);
+
+      } catch (error) {
+        console.error('Erreur chargement stock :', error);
+        afficherEtat('errorState');
+      }
+    }
+
+    // ---------------------------------------------------
+    // Affiche la liste des plats avec leur toggle
+    // @param {Array} plats - Liste des plats reçue de l'API
+    // ---------------------------------------------------
+    function afficherStock(plats) {
+      const list = document.getElementById('stockList');
+      list.innerHTML = '';
+
+      plats.forEach(plat => {
+        list.appendChild(buildStockRow(plat));
+      });
+
+      afficherEtat('stockList');
+    }
+
+    // ---------------------------------------------------
+    // Construit une ligne de plat avec toggle disponibilité
+    // @param {Object} plat - Données du plat
+    // ---------------------------------------------------
+    function buildStockRow(plat) {
+      const row = document.createElement('div');
+      row.className = 'stock-row' + (!plat.available ? ' stock-row--unavailable' : '');
+
+      row.innerHTML = `
+        <div class="stock-row__info">
+          ${plat.photo ? `<img src="${plat.photo}" class="stock-row__photo" alt="${plat.name}" />` : '<div class="stock-row__photo-placeholder">🍽️</div>'}
+          <div>
+            <p class="stock-row__name">${plat.name}</p>
+            <p class="stock-row__category">${plat.category} — ${formatPrice(plat.price)}</p>
+          </div>
+        </div>
+        <div class="stock-row__toggle">
+          <span class="stock-row__label">${plat.available ? 'Disponible' : 'Épuisé'}</span>
+          <label class="toggle">
+            <input
+              type="checkbox"
+              ${plat.available ? 'checked' : ''}
+              onchange="changerDisponibilite('${plat.id}', this.checked)"
+            />
+            <span class="toggle__slider"></span>
+          </label>
+        </div>
+      `;
+
+      return row;
+    }
+
+    // ---------------------------------------------------
+    // Change la disponibilité d'un plat
+    // @param {string} platId - ID du plat
+    // @param {boolean} disponible - Nouvelle disponibilité
+    // ---------------------------------------------------
+    async function changerDisponibilite(platId, disponible) {
+      try {
+        // Appel à l'API de Nadia : PUT /api/restaurant/menu/:id/availability
+        const response = await fetch('/api/restaurant/menu/' + platId + '/availability', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ available: disponible })
+        });
+
+        if (!response.ok) {
+          alert('Erreur lors de la mise à jour. Réessaie.');
+          chargerStock();
+          return;
+        }
+
+        // Recharger le stock pour mettre à jour l'affichage
+        chargerStock();
+
+      } catch (error) {
+        console.error('Erreur disponibilité :', error);
+        alert('Impossible de contacter le serveur.');
+        chargerStock();
+      }
+    }
+
+    // ---------------------------------------------------
+    // Formate un prix en FCFA
+    // @param {number} amount - Montant à formater
+    // ---------------------------------------------------
+    function formatPrice(amount) {
+      return amount.toLocaleString('fr-FR') + ' FCFA';
+    }
+
+    // ---------------------------------------------------
+    // Affiche uniquement l'élément demandé, cache les autres
+    // @param {string} elementId - ID de l'élément à afficher
+    // ---------------------------------------------------
+    function afficherEtat(elementId) {
+      const ids = ['loadingState', 'errorState', 'stockList'];
+      ids.forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById(elementId).style.display =
+        elementId === 'stockList' ? 'block' : 'flex';
+    }
+
+    chargerStock();
+
+  </script>
+</body>
+</html>
