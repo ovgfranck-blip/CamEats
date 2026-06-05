@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Noter ma commande</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/client.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar__logo">🍽️ CamEats</a>
+    <a href="search.html" class="navbar__back">← Accueil</a>
+  </nav>
+
+  <main class="rating-main">
+
+    <!-- EN-TÊTE -->
+    <div class="rating-header">
+      <div class="rating-header__icon">🎉</div>
+      <h1 class="rating-header__title">Commande livrée !</h1>
+      <p class="rating-header__subtitle">Comment était ton repas ?</p>
+    </div>
+
+    <!-- FORMULAIRE DE NOTATION -->
+    <div class="rating-card">
+
+      <!-- Nom du plat -->
+      <p class="rating-dish" id="dishName">Ton plat</p>
+
+      <!-- ÉTOILES -->
+      <div class="rating-stars" id="ratingStars">
+        <span class="star-btn" data-value="1" onclick="noterAvec(1)">★</span>
+        <span class="star-btn" data-value="2" onclick="noterAvec(2)">★</span>
+        <span class="star-btn" data-value="3" onclick="noterAvec(3)">★</span>
+        <span class="star-btn" data-value="4" onclick="noterAvec(4)">★</span>
+        <span class="star-btn" data-value="5" onclick="noterAvec(5)">★</span>
+      </div>
+
+      <p class="rating-label" id="ratingLabel">Sélectionne une note</p>
+
+      <!-- COMMENTAIRE -->
+      <div class="rating-comment">
+        <label class="rating-comment__label">Laisse un commentaire (optionnel)</label>
+        <textarea
+          id="commentInput"
+          class="rating-comment__input"
+          placeholder="C'était délicieux, livraison rapide..."
+          rows="4"
+        ></textarea>
+      </div>
+
+      <!-- BOUTON ENVOYER -->
+      <button class="btn-primary rating-btn-submit" onclick="envoyerNote()">
+        Envoyer ma note
+      </button>
+
+    </div>
+
+    <!-- MESSAGE CONFIRMATION -->
+    <div class="rating-success" id="ratingSuccess" style="display:none;">
+      <div class="rating-success__icon">✅</div>
+      <p class="rating-success__text">Merci pour ton avis !</p>
+      <a href="search.html" class="btn-primary" style="text-decoration:none; text-align:center;">
+        Retour à l'accueil
+      </a>
+    </div>
+
+  </main>
+
+  <script src="../../js/client.js"></script>
+  <script>
+
+    // Note sélectionnée par l'utilisateur
+    let noteSelectionnee = 0;
+
+    // Labels selon la note
+    const labels = {
+      1: '😞 Très mauvais',
+      2: '😐 Mauvais',
+      3: '🙂 Correct',
+      4: '😊 Bon',
+      5: '🤩 Excellent !'
+    };
+
+    // ---------------------------------------------------
+    // Met à jour l'affichage des étoiles selon la note choisie
+    // @param {number} note - Note choisie entre 1 et 5
+    // ---------------------------------------------------
+    function noterAvec(note) {
+      noteSelectionnee = note;
+
+      // Colorer les étoiles
+      const etoiles = document.querySelectorAll('.star-btn');
+      etoiles.forEach(etoile => {
+        const val = parseInt(etoile.getAttribute('data-value'));
+        etoile.classList.toggle('star-btn--active', val <= note);
+      });
+
+      // Afficher le label correspondant
+      document.getElementById('ratingLabel').textContent = labels[note];
+    }
+
+    // ---------------------------------------------------
+    // Envoie la note et le commentaire à l'API de Nadia
+    // ---------------------------------------------------
+    async function envoyerNote() {
+      if (noteSelectionnee === 0) {
+        alert('Sélectionne une note avant d\'envoyer.');
+        return;
+      }
+
+      const commentaire = document.getElementById('commentInput').value.trim();
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get('order');
+
+      try {
+        // Appel à l'API de Nadia : POST /api/orders/:id/rating
+        const response = await fetch('/api/orders/' + orderId + '/rating', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rating: noteSelectionnee,
+            comment: commentaire
+          })
+        });
+
+        if (!response.ok) {
+          alert('Erreur lors de l\'envoi. Réessaie.');
+          return;
+        }
+
+        // Cacher le formulaire et afficher la confirmation
+        document.querySelector('.rating-card').style.display = 'none';
+        document.getElementById('ratingSuccess').style.display = 'flex';
+
+      } catch (error) {
+        console.error('Erreur envoi note :', error);
+        alert('Impossible de contacter le serveur. Réessaie plus tard.');
+      }
+    }
+
+  </script>
+</body>
+</html>
