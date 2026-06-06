@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Itinéraire</title>
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/livreur.css" />
+</head>
+<body>
+
+  <header class="livreur-header">
+    <a href="livreur-dashboard.html" class="btn-back">← Retour</a>
+    <h1 class="header-title" id="mapTitle">Vers le restaurant</h1>
+  </header>
+
+  <main class="map-main">
+
+    <div class="status-banner" id="statusBanner">
+      <span id="statusText">🚗 En route vers le restaurant</span>
+    </div>
+
+    <div class="map-placeholder" id="mapContainer">
+      <p>📍 Carte GPS en cours de chargement…</p>
+      <p class="map-note">Coordonne-toi avec Nadia pour l'intégration de l'API Maps.</p>
+    </div>
+
+    <div class="map-info-card">
+      <div class="map-info-row">
+        <span class="map-info-label">Destination</span>
+        <span class="map-info-value" id="mapDestination">—</span>
+      </div>
+      <div class="map-info-row">
+        <span class="map-info-label">Distance restante</span>
+        <span class="map-info-value" id="mapDistance">—</span>
+      </div>
+      <div class="map-info-row">
+        <span class="map-info-label">Temps estimé</span>
+        <span class="map-info-value" id="mapDuree">—</span>
+      </div>
+    </div>
+
+    <div class="map-action">
+      <button id="btnRecuperer" class="btn btn-primary btn-full" style="display:none;">
+        ✅ J'ai récupéré la commande
+      </button>
+      <button id="btnLivrer" class="btn btn-success btn-full" style="display:none;">
+        📦 Commande livrée
+      </button>
+    </div>
+
+  </main>
+
+  <script src="../../js/global.js"></script>
+  <script src="../../js/livreur.js"></script>
+</body>
+</html>

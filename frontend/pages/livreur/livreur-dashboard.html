@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Espace Livreur</title>
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/livreur.css" />
+</head>
+<body>
+
+  <header class="livreur-header">
+    <div class="header-left">
+      <span class="logo-text">CamEats</span>
+      <span class="header-role">Livreur</span>
+    </div>
+    <div class="header-right">
+      <span id="livreurName" class="livreur-name">Aubin</span>
+      <button id="toggleStatus" class="btn-status disponible">Disponible</button>
+    </div>
+  </header>
+
+  <main class="livreur-main">
+
+    <section class="card solde-card">
+      <p class="card-label">Revenus aujourd'hui</p>
+      <p class="card-amount" id="soldeJour">0 FCFA</p>
+      <a href="livreur-revenus.html" class="link-small">Voir détail →</a>
+    </section>
+
+    <section class="section-title-row">
+      <h2 class="section-title">Courses disponibles</h2>
+      <span class="badge" id="coursesCount">0</span>
+    </section>
+
+    <section id="coursesList" class="courses-list">
+      <p class="empty-state">Aucune course disponible pour le moment.</p>
+    </section>
+
+    <nav class="bottom-nav">
+      <a href="livreur-dashboard.html" class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span>Accueil</span>
+      </a>
+      <a href="livreur-map.html" class="nav-item">
+        <span class="nav-icon">🗺️</span>
+        <span>Carte</span>
+      </a>
+      <a href="livreur-historique.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        <span>Historique</span>
+      </a>
+      <a href="livreur-revenus.html" class="nav-item">
+        <span class="nav-icon">💰</span>
+        <span>Revenus</span>
+      </a>
+    </nav>
+
+  </main>
+
+  <script src="../../js/global.js"></script>
+  <script src="../../js/livreur.js"></script>
+</body>
+</html>

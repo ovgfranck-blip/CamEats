@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Revenus</title>
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/livreur.css" />
+</head>
+<body>
+
+  <header class="livreur-header">
+    <a href="livreur-dashboard.html" class="btn-back">← Retour</a>
+    <h1 class="header-title">Mes revenus</h1>
+  </header>
+
+  <main class="livreur-main">
+
+    <div class="filter-row">
+      <button class="btn-filter active" data-period="today">Aujourd'hui</button>
+      <button class="btn-filter" data-period="week">Cette semaine</button>
+      <button class="btn-filter" data-period="month">Ce mois</button>
+    </div>
+
+    <section class="card revenus-summary">
+      <p class="card-label">Total gagné</p>
+      <p class="card-amount" id="totalRevenus">0 FCFA</p>
+      <div class="revenus-detail">
+        <div class="revenu-stat">
+          <span class="stat-value" id="nbCourses">0</span>
+          <span class="stat-label">Courses</span>
+        </div>
+        <div class="revenu-stat">
+          <span class="stat-value" id="distanceTotale">0 km</span>
+          <span class="stat-label">Distance</span>
+        </div>
+        <div class="revenu-stat">
+          <span class="stat-value" id="moyenneCourse">0 FCFA</span>
+          <span class="stat-label">Moyenne/course</span>
+        </div>
+      </div>
+    </section>
+
+    <h2 class="section-title">Détail</h2>
+    <section id="revenusList" class="historique-list">
+      <p class="empty-state">Aucun revenu pour cette période.</p>
+    </section>
+
+    <nav class="bottom-nav">
+      <a href="livreur-dashboard.html" class="nav-item">
+        <span class="nav-icon">🏠</span><span>Accueil</span>
+      </a>
+      <a href="livreur-map.html" class="nav-item">
+        <span class="nav-icon">🗺️</span><span>Carte</span>
+      </a>
+      <a href="livreur-historique.html" class="nav-item">
+        <span class="nav-icon">📋</span><span>Historique</span>
+      </a>
+      <a href="livreur-revenus.html" class="nav-item active">
+        <span class="nav-icon">💰</span><span>Revenus</span>
+      </a>
+    </nav>
+
+  </main>
+
+  <script src="../../js/global.js"></script>
+  <script src="../../js/livreur.js"></script>
+</body>
+</html>

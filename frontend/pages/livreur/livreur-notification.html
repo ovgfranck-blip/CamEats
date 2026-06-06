@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamEats — Nouvelle Course</title>
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/livreur.css" />
+</head>
+<body>
+
+  <div id="notificationOverlay" class="notification-overlay">
+    <div class="notification-card">
+      <div class="notification-header">
+        <span class="notif-icon">🔔</span>
+        <h2 class="notif-title">Nouvelle course !</h2>
+      </div>
+
+      <div class="notif-details">
+        <div class="notif-row">
+          <span class="notif-label">Restaurant</span>
+          <span class="notif-value" id="notifRestaurant">—</span>
+        </div>
+        <div class="notif-row">
+          <span class="notif-label">Adresse client</span>
+          <span class="notif-value" id="notifAdresseClient">—</span>
+        </div>
+        <div class="notif-row">
+          <span class="notif-label">Distance</span>
+          <span class="notif-value" id="notifDistance">—</span>
+        </div>
+        <div class="notif-row highlight">
+          <span class="notif-label">Montant</span>
+          <span class="notif-value" id="notifMontant">—</span>
+        </div>
+      </div>
+
+      <div class="timer-bar">
+        <div class="timer-fill" id="timerFill"></div>
+      </div>
+      <p class="timer-label">La course expire dans <span id="timerCount">30</span>s</p>
+
+      <div class="notif-actions">
+        <button id="btnRefuser" class="btn btn-refuser">✕ Refuser</button>
+        <button id="btnAccepter" class="btn btn-accepter">✓ Accepter</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="livreur-main">
+    <h1 class="page-title">En attente d'une course…</h1>
+    <p class="page-subtitle">Tu seras notifié dès qu'une course est disponible près de toi.</p>
+
+    <nav class="bottom-nav">
+      <a href="livreur-dashboard.html" class="nav-item">
+        <span class="nav-icon">🏠</span><span>Accueil</span>
+      </a>
+      <a href="livreur-map.html" class="nav-item">
+        <span class="nav-icon">🗺️</span><span>Carte</span>
+      </a>
+      <a href="livreur-historique.html" class="nav-item">
+        <span class="nav-icon">📋</span><span>Historique</span>
+      </a>
+      <a href="livreur-revenus.html" class="nav-item">
+        <span class="nav-icon">💰</span><span>Revenus</span>
+      </a>
+    </nav>
+  </main>
+
+  <script src="../../js/global.js"></script>
+  <script src="../../js/livreur.js"></script>
+</body>
+</html>
