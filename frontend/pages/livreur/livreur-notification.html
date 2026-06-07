@@ -11,61 +11,73 @@
 
   <div id="notificationOverlay" class="notification-overlay">
     <div class="notification-card">
-      <div class="notification-header">
+
+      <div class="notif-header">
         <span class="notif-icon">🔔</span>
-        <h2 class="notif-title">Nouvelle course !</h2>
-      </div>
-
-      <div class="notif-details">
-        <div class="notif-row">
-          <span class="notif-label">Restaurant</span>
-          <span class="notif-value" id="notifRestaurant">—</span>
-        </div>
-        <div class="notif-row">
-          <span class="notif-label">Adresse client</span>
-          <span class="notif-value" id="notifAdresseClient">—</span>
-        </div>
-        <div class="notif-row">
-          <span class="notif-label">Distance</span>
-          <span class="notif-value" id="notifDistance">—</span>
-        </div>
-        <div class="notif-row highlight">
-          <span class="notif-label">Montant</span>
-          <span class="notif-value" id="notifMontant">—</span>
+        <div>
+          <div class="notif-title">Nouvelle course !</div>
+          <div style="font-size:12px;color:#888;">Réponds vite avant expiration</div>
         </div>
       </div>
 
-      <div class="timer-bar">
-        <div class="timer-fill" id="timerFill"></div>
+      <div class="notif-row">
+        <span class="notif-label">🍽 Restaurant</span>
+        <span class="notif-value" id="notifRestaurant">—</span>
       </div>
-      <p class="timer-label">La course expire dans <span id="timerCount">30</span>s</p>
+      <div class="notif-row">
+        <span class="notif-label">📍 Adresse client</span>
+        <span class="notif-value" id="notifAdresseClient">—</span>
+      </div>
+      <div class="notif-row">
+        <span class="notif-label">📏 Distance</span>
+        <span class="notif-value" id="notifDistance">—</span>
+      </div>
+      <div class="notif-row">
+        <span class="notif-label">💰 Montant</span>
+        <span class="notif-value big" id="notifMontant">—</span>
+      </div>
+
+      <div class="timer-wrap" style="margin-top:14px;">
+        <div class="timer-track">
+          <div class="timer-fill" id="timerFill" style="width:100%;"></div>
+        </div>
+        <div class="timer-row">
+          <span>Expire dans</span>
+          <span id="timerCount">30</span>s
+        </div>
+      </div>
 
       <div class="notif-actions">
-        <button id="btnRefuser" class="btn btn-refuser">✕ Refuser</button>
-        <button id="btnAccepter" class="btn btn-accepter">✓ Accepter</button>
+        <button id="btnRefuser" class="btn-notif-refuse">✕ Refuser</button>
+        <button id="btnAccepter" class="btn-notif-accept">✓ Accepter</button>
       </div>
+
     </div>
   </div>
 
-  <main class="livreur-main">
-    <h1 class="page-title">En attente d'une course…</h1>
-    <p class="page-subtitle">Tu seras notifié dès qu'une course est disponible près de toi.</p>
-
-    <nav class="bottom-nav">
-      <a href="livreur-dashboard.html" class="nav-item">
-        <span class="nav-icon">🏠</span><span>Accueil</span>
-      </a>
-      <a href="livreur-map.html" class="nav-item">
-        <span class="nav-icon">🗺️</span><span>Carte</span>
-      </a>
-      <a href="livreur-historique.html" class="nav-item">
-        <span class="nav-icon">📋</span><span>Historique</span>
-      </a>
-      <a href="livreur-revenus.html" class="nav-item">
-        <span class="nav-icon">💰</span><span>Revenus</span>
-      </a>
-    </nav>
+  <main class="livreur-main" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;">
+    <div style="font-size:48px;margin-bottom:16px;">🛵</div>
+    <div style="font-size:18px;font-weight:600;margin-bottom:8px;">En attente d'une course…</div>
+    <div style="font-size:14px;color:#888;text-align:center;">Tu seras notifié dès qu'une course<br>est disponible près de toi.</div>
   </main>
+
+  <nav class="bottom-nav">
+    <a href="livreur-dashboard.html" class="nav-item">
+      <span class="nav-icon">🏠</span><span>Accueil</span>
+    </a>
+    <a href="livreur-map.html" class="nav-item">
+      <span class="nav-icon">🗺️</span><span>Carte</span>
+    </a>
+    <a href="livreur-historique.html" class="nav-item">
+      <span class="nav-icon">📋</span><span>Courses</span>
+    </a>
+    <a href="livreur-revenus.html" class="nav-item">
+      <span class="nav-icon">💰</span><span>Revenus</span>
+    </a>
+    <a href="livreur-profil.html" class="nav-item">
+      <span class="nav-icon">👤</span><span>Profil</span>
+    </a>
+  </nav>
 
   <script src="../../js/global.js"></script>
   <script src="../../js/livreur.js"></script>

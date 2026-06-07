@@ -9,43 +9,70 @@
 </head>
 <body>
 
-  <header class="livreur-header">
-    <a href="livreur-dashboard.html" class="btn-back">← Retour</a>
-    <h1 class="header-title" id="mapTitle">Vers le restaurant</h1>
-  </header>
-
   <main class="map-main">
 
     <div class="status-banner" id="statusBanner">
       <span id="statusText">🚗 En route vers le restaurant</span>
     </div>
 
-    <div class="map-placeholder" id="mapContainer">
-      <p>📍 Carte GPS en cours de chargement…</p>
-      <p class="map-note">Coordonne-toi avec Nadia pour l'intégration de l'API Maps.</p>
+    <!-- Zone carte -->
+    <div class="map-container" id="mapContainer">
+      <div class="map-grid-bg"></div>
+      <div class="map-route-line"></div>
+      <div class="map-pin pin-restaurant">🍽</div>
+      <div class="map-pin pin-client">📍</div>
     </div>
 
-    <div class="map-info-card">
+    <!-- ETA -->
+    <div class="eta-strip">
+      <div>
+        <div class="eta-val" id="etaVal">— min</div>
+        <div class="eta-lbl" id="etaLbl">Calcul en cours…</div>
+      </div>
+      <button class="btn btn-danger" style="padding:8px 16px;font-size:13px;">Naviguer →</button>
+    </div>
+
+    <!-- Infos commande -->
+    <div class="map-info">
       <div class="map-info-row">
-        <span class="map-info-label">Destination</span>
-        <span class="map-info-value" id="mapDestination">—</span>
+        <span class="map-info-label">Restaurant</span>
+        <span class="map-info-value" id="mapResto">—</span>
       </div>
       <div class="map-info-row">
-        <span class="map-info-label">Distance restante</span>
-        <span class="map-info-value" id="mapDistance">—</span>
+        <span class="map-info-label">Client</span>
+        <span class="map-info-value" id="mapClient">—</span>
       </div>
       <div class="map-info-row">
-        <span class="map-info-label">Temps estimé</span>
-        <span class="map-info-value" id="mapDuree">—</span>
+        <span class="map-info-label">Adresse</span>
+        <span class="map-info-value" id="mapAdresse">—</span>
       </div>
     </div>
 
-    <div class="map-action">
+    <!-- Étapes -->
+    <div class="steps-row">
+      <div class="step">
+        <div class="step-dot done" id="step1">✓</div>
+        <div class="step-label">Accepté</div>
+      </div>
+      <div class="step-line done" id="line1"></div>
+      <div class="step">
+        <div class="step-dot done" id="step2">✓</div>
+        <div class="step-label" id="step2lbl">Récupéré</div>
+      </div>
+      <div class="step-line pending" id="line2"></div>
+      <div class="step">
+        <div class="step-dot active" id="step3">3</div>
+        <div class="step-label active">Livraison</div>
+      </div>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div style="padding:16px;background:var(--color-dark);">
       <button id="btnRecuperer" class="btn btn-primary btn-full" style="display:none;">
         ✅ J'ai récupéré la commande
       </button>
       <button id="btnLivrer" class="btn btn-success btn-full" style="display:none;">
-        📦 Commande livrée
+        📦 Commande livrée !
       </button>
     </div>
 

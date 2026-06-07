@@ -11,20 +11,26 @@
 
   <header class="livreur-header">
     <a href="livreur-dashboard.html" class="btn-back">← Retour</a>
-    <h1 class="header-title">Historique des courses</h1>
+    <div style="font-size:15px;font-weight:600;">Mes courses</div>
+    <div style="width:40px;"></div>
   </header>
 
   <main class="livreur-main">
 
     <div class="filter-row">
       <button class="btn-filter active" data-period="today">Aujourd'hui</button>
-      <button class="btn-filter" data-period="week">Cette semaine</button>
-      <button class="btn-filter" data-period="month">Ce mois</button>
+      <button class="btn-filter" data-period="week">Semaine</button>
+      <button class="btn-filter" data-period="month">Mois</button>
     </div>
 
-    <section id="historiqueList" class="historique-list">
+    <div id="historiqueList">
       <p class="empty-state">Aucune course pour cette période.</p>
-    </section>
+    </div>
+
+    <div class="incident-card">
+      <div class="incident-label">💬 Un problème avec une course ?</div>
+      <button class="btn-incident">Signaler un incident →</button>
+    </div>
 
     <nav class="bottom-nav">
       <a href="livreur-dashboard.html" class="nav-item">
@@ -34,10 +40,13 @@
         <span class="nav-icon">🗺️</span><span>Carte</span>
       </a>
       <a href="livreur-historique.html" class="nav-item active">
-        <span class="nav-icon">📋</span><span>Historique</span>
+        <span class="nav-icon">📋</span><span>Courses</span>
       </a>
       <a href="livreur-revenus.html" class="nav-item">
         <span class="nav-icon">💰</span><span>Revenus</span>
+      </a>
+      <a href="livreur-profil.html" class="nav-item">
+        <span class="nav-icon">👤</span><span>Profil</span>
       </a>
     </nav>
 

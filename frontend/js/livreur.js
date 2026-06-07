@@ -1,9 +1,7 @@
 /* =============================================
-   livreur.js — Logique de l'espace livreur
+   livreur.js — Espace Livreur CamEats
    Auteur : Aubin
-   Coordonne-toi avec Nadia pour les routes API
    ============================================= */
-
 'use strict';
 
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -16,233 +14,251 @@ let timerInterval = null;
 /* -----------------------------------------------
    UTILITAIRES
    ----------------------------------------------- */
+const formatFCFA = (n) => `${Number(n).toLocaleString('fr-FR')} FCFA`;
+const formatDate = (d) => new Date(d).toLocaleDateString('fr-FR', {
+  day: '2-digit', month: '2-digit', year: 'numeric',
+  hour: '2-digit', minute: '2-digit',
+});
+const el = (id) => document.getElementById(id);
+const setText = (id, val) => { if (el(id)) el(id).textContent = val; };
 
-const formatFCFA = (amount) => `${amount.toLocaleString('fr-FR')} FCFA`;
-
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-const showEmptyState = (containerId, message) => {
-  const container = document.getElementById(containerId);
-  if (container) container.innerHTML = `<p class="empty-state">${message}</p>`;
+/* Salutation selon l'heure */
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return 'Bonjour';
+  if (h < 18) return 'Bon après-midi';
+  return 'Bonsoir';
 };
 
 /* -----------------------------------------------
    STATUT LIVREUR
    ----------------------------------------------- */
-
-const updateStatusButton = (status) => {
-  const btn = document.getElementById('toggleStatus');
-  if (!btn) return;
-  btn.textContent = status === 'disponible' ? 'Disponible' : 'En course';
-  btn.className = `btn-status ${status}`;
-};
-
-const toggleLivreurStatus = async () => {
-  const newStatus = livreurStatus === 'disponible' ? 'en-course' : 'disponible';
-  try {
-    /* TODO: PUT /api/livreur/status — route Nadia */
-    livreurStatus = newStatus;
-    updateStatusButton(livreurStatus);
-  } catch (error) {
-    console.error('Erreur mise à jour statut :', error);
-  }
+const initStatusPill = () => {
+  const btns = document.querySelectorAll('.s-btn');
+  btns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      btns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      livreurStatus = btn.dataset.status;
+      /* TODO: PUT /api/livreur/status — route Nadia */
+    });
+  });
 };
 
 /* -----------------------------------------------
    DASHBOARD
    ----------------------------------------------- */
-
 const createCourseCard = (course) => `
-  <div class="course-item">
-    <p class="course-restaurant">🍽 ${course.restaurantName}</p>
-    <p class="course-meta">📍 ${course.clientAddress} · ${course.distance} km</p>
-    <p class="course-montant">${formatFCFA(course.amount)}</p>
+  <div class="course-card highlight">
+    <div class="course-top">
+      <div>
+        <div class="course-resto">${course.restaurantName}</div>
+        <div class="course-adresse">${course.restaurantAddress} → ${course.clientAddress}</div>
+      </div>
+      <span class="badge badge-orange">${formatFCFA(course.amount)}</span>
+    </div>
+    <div class="course-meta">
+      📍 ${course.distance} km · <span>~${course.estimatedTime} min</span><br>
+      🍽 ${course.itemsCount || 1} article(s) · ⏰ il y a <span>${course.minutesAgo || 1} min</span>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-track">
+        <div class="timer-fill" id="timer_${course.id}" style="width:100%;"></div>
+      </div>
+      <div class="timer-row">
+        <span>Expire dans</span>
+        <span id="timerText_${course.id}">${NOTIFICATION_TIMEOUT}s</span>
+      </div>
+    </div>
+    <div class="course-actions">
+      <button class="btn-refuse" onclick="refuserCourse(${course.id})">✕ Refuser</button>
+      <button class="btn-accept" onclick="accepterCourse(${course.id})">✓ Accepter la course</button>
+    </div>
   </div>
 `;
 
 const loadAvailableCourses = async () => {
-  const list = document.getElementById('coursesList');
-  const badge = document.getElementById('coursesCount');
+  const list = el('coursesList');
   if (!list) return;
   try {
     /* TODO: GET /api/deliveries/available — route Nadia */
     const courses = [];
     if (courses.length === 0) {
-      list.innerHTML = '<p class="empty-state">Aucune course disponible pour le moment.</p>';
-      if (badge) badge.textContent = '0';
+      list.innerHTML = '<p class="empty-state">🛵 Aucune course disponible pour le moment.</p>';
       return;
     }
     list.innerHTML = courses.map(createCourseCard).join('');
-    if (badge) badge.textContent = courses.length;
-  } catch (error) {
-    console.error('Erreur chargement courses :', error);
-    showEmptyState('coursesList', 'Impossible de charger les courses.');
+    courses.forEach((c) => startCourseTimer(c.id));
+  } catch (e) {
+    console.error('Erreur chargement courses :', e);
   }
 };
 
-const loadSoldeJour = async () => {
-  const soldeEl = document.getElementById('soldeJour');
-  if (!soldeEl) return;
+const loadDashboardStats = async () => {
   try {
-    /* TODO: GET /api/livreur/earnings/today — route Nadia */
-    soldeEl.textContent = formatFCFA(0);
-  } catch (error) {
-    console.error('Erreur chargement solde :', error);
+    /* TODO: GET /api/livreur/stats/today — route Nadia */
+    const greeting = el('greetingText');
+    if (greeting) greeting.textContent = `${getGreeting()}, Aubin 👋`;
+  } catch (e) {
+    console.error('Erreur stats :', e);
   }
 };
 
-/* -----------------------------------------------
-   NOTIFICATION
-   ----------------------------------------------- */
-
-const showCourseNotification = (course) => {
-  const overlay = document.getElementById('notificationOverlay');
-  if (!overlay) return;
-  document.getElementById('notifRestaurant').textContent = course.restaurantName;
-  document.getElementById('notifAdresseClient').textContent = course.clientAddress;
-  document.getElementById('notifDistance').textContent = `${course.distance} km`;
-  document.getElementById('notifMontant').textContent = formatFCFA(course.amount);
-  overlay.style.display = 'flex';
-  startNotificationTimer(course.id);
-};
-
-const startNotificationTimer = (courseId) => {
-  let secondsLeft = NOTIFICATION_TIMEOUT;
-  const timerFill = document.getElementById('timerFill');
-  const timerCount = document.getElementById('timerCount');
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    secondsLeft -= 1;
-    if (timerCount) timerCount.textContent = secondsLeft;
-    if (timerFill) timerFill.style.width = `${(secondsLeft / NOTIFICATION_TIMEOUT) * 100}%`;
-    if (secondsLeft <= 0) {
-      clearInterval(timerInterval);
-      closeCourseNotification();
+/* Timer individuel par course */
+const startCourseTimer = (courseId) => {
+  let left = NOTIFICATION_TIMEOUT;
+  const fill = el(`timer_${courseId}`);
+  const txt = el(`timerText_${courseId}`);
+  const interval = setInterval(() => {
+    left -= 1;
+    if (fill) fill.style.width = `${(left / NOTIFICATION_TIMEOUT) * 100}%`;
+    if (txt) txt.textContent = `${left}s`;
+    if (left <= 0) {
+      clearInterval(interval);
+      const card = fill?.closest('.course-card');
+      if (card) card.remove();
     }
   }, 1000);
 };
 
-const closeCourseNotification = () => {
-  const overlay = document.getElementById('notificationOverlay');
-  if (overlay) overlay.style.display = 'none';
-  if (timerInterval) clearInterval(timerInterval);
-};
-
+/* -----------------------------------------------
+   ACCEPTER / REFUSER
+   ----------------------------------------------- */
 const accepterCourse = async (courseId) => {
   try {
     /* TODO: PUT /api/deliveries/:id/accept — route Nadia */
     currentDeliveryId = courseId;
     livreurStatus = 'en-course';
-    updateStatusButton(livreurStatus);
-    closeCourseNotification();
     window.location.href = 'livreur-map.html';
-  } catch (error) {
-    console.error('Erreur acceptation course :', error);
+  } catch (e) {
+    console.error('Erreur acceptation :', e);
   }
 };
 
 const refuserCourse = async (courseId) => {
   try {
     /* TODO: PUT /api/deliveries/:id/decline — route Nadia */
-    closeCourseNotification();
-  } catch (error) {
-    console.error('Erreur refus course :', error);
+    const card = document.querySelector(`#timer_${courseId}`)?.closest('.course-card');
+    if (card) card.remove();
+  } catch (e) {
+    console.error('Erreur refus :', e);
   }
 };
 
 /* -----------------------------------------------
-   STATUTS DE LIVRAISON
+   NOTIFICATION OVERLAY
    ----------------------------------------------- */
+const showCourseNotification = (course) => {
+  const overlay = el('notificationOverlay');
+  if (!overlay) return;
+  setText('notifRestaurant', course.restaurantName);
+  setText('notifAdresseClient', course.clientAddress);
+  setText('notifDistance', `${course.distance} km`);
+  setText('notifMontant', formatFCFA(course.amount));
+  overlay.style.display = 'flex';
+  startNotificationTimer(course.id);
+};
 
+const startNotificationTimer = (courseId) => {
+  let left = NOTIFICATION_TIMEOUT;
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    left -= 1;
+    const fill = el('timerFill');
+    const count = el('timerCount');
+    if (fill) fill.style.width = `${(left / NOTIFICATION_TIMEOUT) * 100}%`;
+    if (count) count.textContent = left;
+    if (left <= 0) { clearInterval(timerInterval); closeNotification(); }
+  }, 1000);
+};
+
+const closeNotification = () => {
+  const overlay = el('notificationOverlay');
+  if (overlay) overlay.style.display = 'none';
+  if (timerInterval) clearInterval(timerInterval);
+};
+
+/* -----------------------------------------------
+   CARTE GPS — STATUTS DE LIVRAISON
+   ----------------------------------------------- */
 const updateDeliveryStatus = async (newStatus) => {
-  if (!currentDeliveryId) return;
-  const statusMessages = {
+  const messages = {
     'en_route_restaurant': '🚗 En route vers le restaurant',
-    'commande_recuperee': '📦 Commande récupérée',
+    'commande_recuperee': '📦 Commande récupérée — En route vers le client',
     'en_route_client': '🚗 En route vers le client',
     'livre': '✅ Commande livrée !',
   };
   try {
     /* TODO: PUT /api/deliveries/:id/status — route Nadia */
-    const statusText = document.getElementById('statusText');
-    if (statusText) statusText.textContent = statusMessages[newStatus] || newStatus;
-  } catch (error) {
-    console.error('Erreur mise à jour statut livraison :', error);
+    setText('statusText', messages[newStatus] || newStatus);
+    setText('statusBanner', messages[newStatus] || newStatus);
+  } catch (e) {
+    console.error('Erreur statut livraison :', e);
   }
 };
 
 /* -----------------------------------------------
    HISTORIQUE
    ----------------------------------------------- */
-
-const createHistoriqueItem = (course) => `
-  <div class="historique-item">
-    <div class="historique-info">
-      <span class="historique-date">${formatDate(course.date)}</span>
-      <span class="historique-restaurant">${course.restaurantName}</span>
-      <span class="historique-distance">${course.distance} km</span>
+const createHistItem = (c) => `
+  <div class="hist-item">
+    <div class="hist-icon">🍽</div>
+    <div class="hist-info">
+      <div class="hist-name">${c.restaurantName}</div>
+      <div class="hist-meta">${formatDate(c.date)} · ${c.distance} km · ⭐ ${c.rating || '—'}</div>
     </div>
-    <span class="historique-montant">${formatFCFA(course.amount)}</span>
+    <div class="hist-right">
+      <div class="hist-amount">${Number(c.amount).toLocaleString('fr-FR')}</div>
+      <span class="badge ${c.status === 'livre' ? 'badge-green' : 'badge-gray'}" style="margin-top:4px;">
+        ${c.status === 'livre' ? 'Livré' : 'Annulé'}
+      </span>
+    </div>
   </div>
 `;
 
 const loadHistorique = async (period = 'today') => {
-  const list = document.getElementById('historiqueList');
+  const list = el('historiqueList');
   if (!list) return;
   try {
     /* TODO: GET /api/livreur/history?period=today — route Nadia */
     const courses = [];
-    list.innerHTML = courses.length === 0
-      ? '<p class="empty-state">Aucune course pour cette période.</p>'
-      : courses.map(createHistoriqueItem).join('');
-  } catch (error) {
-    console.error('Erreur chargement historique :', error);
-    showEmptyState('historiqueList', "Impossible de charger l'historique.");
+    list.innerHTML = courses.length
+      ? courses.map(createHistItem).join('')
+      : '<p class="empty-state">Aucune course pour cette période.</p>';
+  } catch (e) {
+    console.error('Erreur historique :', e);
   }
 };
 
 /* -----------------------------------------------
    REVENUS
    ----------------------------------------------- */
-
 const loadRevenus = async (period = 'today') => {
   try {
     /* TODO: GET /api/livreur/earnings?period=today — route Nadia */
     const data = { total: 0, nbCourses: 0, distanceTotale: 0, moyenneCourse: 0, courses: [] };
-    const el = (id) => document.getElementById(id);
-    if (el('totalRevenus')) el('totalRevenus').textContent = formatFCFA(data.total);
-    if (el('nbCourses')) el('nbCourses').textContent = data.nbCourses;
-    if (el('distanceTotale')) el('distanceTotale').textContent = `${data.distanceTotale} km`;
-    if (el('moyenneCourse')) el('moyenneCourse').textContent = formatFCFA(data.moyenneCourse);
+    setText('totalRevenus', formatFCFA(data.total));
+    setText('nbCourses', data.nbCourses);
+    setText('distanceTotale', `${data.distanceTotale} km`);
+    setText('moyenneCourse', data.moyenneCourse.toLocaleString('fr-FR'));
     const list = el('revenusList');
     if (list) {
-      list.innerHTML = data.courses.length === 0
-        ? '<p class="empty-state">Aucun revenu pour cette période.</p>'
-        : data.courses.map(createHistoriqueItem).join('');
+      list.innerHTML = data.courses.length
+        ? data.courses.map(createHistItem).join('')
+        : '<p class="empty-state">Aucun revenu pour cette période.</p>';
     }
-  } catch (error) {
-    console.error('Erreur chargement revenus :', error);
+  } catch (e) {
+    console.error('Erreur revenus :', e);
   }
 };
 
 /* -----------------------------------------------
-   FILTRES DE PÉRIODE
+   FILTRES PÉRIODE (réutilisable)
    ----------------------------------------------- */
-
-const initPeriodFilters = (loadFn) => {
-  const filters = document.querySelectorAll('.btn-filter');
-  filters.forEach((btn) => {
+const initPeriodFilters = (loadFn, selector = '.btn-filter, .ptab') => {
+  document.querySelectorAll(selector).forEach((btn) => {
     btn.addEventListener('click', () => {
-      filters.forEach((b) => b.classList.remove('active'));
+      document.querySelectorAll(selector).forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       loadFn(btn.dataset.period);
     });
@@ -252,37 +268,33 @@ const initPeriodFilters = (loadFn) => {
 /* -----------------------------------------------
    INITIALISATION
    ----------------------------------------------- */
-
 document.addEventListener('DOMContentLoaded', () => {
   const page = window.location.pathname;
 
   if (page.includes('livreur-dashboard')) {
-    loadSoldeJour();
+    loadDashboardStats();
     loadAvailableCourses();
-    const toggleBtn = document.getElementById('toggleStatus');
-    if (toggleBtn) toggleBtn.addEventListener('click', toggleLivreurStatus);
+    initStatusPill();
   }
 
   if (page.includes('livreur-notification')) {
-    const btnAccepter = document.getElementById('btnAccepter');
-    const btnRefuser = document.getElementById('btnRefuser');
-    if (btnAccepter) btnAccepter.addEventListener('click', () => accepterCourse(currentDeliveryId));
-    if (btnRefuser) btnRefuser.addEventListener('click', () => refuserCourse(currentDeliveryId));
+    el('btnAccepter')?.addEventListener('click', () => accepterCourse(currentDeliveryId));
+    el('btnRefuser')?.addEventListener('click', () => refuserCourse(currentDeliveryId));
   }
 
   if (page.includes('livreur-map')) {
-    const btnRecuperer = document.getElementById('btnRecuperer');
-    const btnLivrer = document.getElementById('btnLivrer');
-    if (btnRecuperer) {
-      btnRecuperer.style.display = 'flex';
-      btnRecuperer.addEventListener('click', () => {
+    const btnRec = el('btnRecuperer');
+    const btnLiv = el('btnLivrer');
+    if (btnRec) {
+      btnRec.style.display = 'flex';
+      btnRec.addEventListener('click', () => {
         updateDeliveryStatus('commande_recuperee');
-        btnRecuperer.style.display = 'none';
-        if (btnLivrer) btnLivrer.style.display = 'flex';
+        btnRec.style.display = 'none';
+        if (btnLiv) btnLiv.style.display = 'flex';
       });
     }
-    if (btnLivrer) {
-      btnLivrer.addEventListener('click', () => {
+    if (btnLiv) {
+      btnLiv.addEventListener('click', () => {
         updateDeliveryStatus('livre');
         setTimeout(() => { window.location.href = 'livreur-dashboard.html'; }, 1500);
       });
@@ -291,11 +303,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (page.includes('livreur-historique')) {
     loadHistorique('today');
-    initPeriodFilters(loadHistorique);
+    initPeriodFilters(loadHistorique, '.btn-filter');
   }
 
   if (page.includes('livreur-revenus')) {
     loadRevenus('today');
-    initPeriodFilters(loadRevenus);
+    initPeriodFilters(loadRevenus, '.ptab');
   }
 });

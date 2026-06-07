@@ -3,56 +3,110 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CamEats — Espace Livreur</title>
+  <title>CamEats — Accueil Livreur</title>
   <link rel="stylesheet" href="../../css/global.css" />
   <link rel="stylesheet" href="../../css/livreur.css" />
 </head>
 <body>
 
   <header class="livreur-header">
-    <div class="header-left">
-      <span class="logo-text">CamEats</span>
-      <span class="header-role">Livreur</span>
+    <div>
+      <div class="greeting" id="greetingText">Bonjour, Aubin 👋</div>
+      <div class="greeting-sub">Yaoundé · <span style="color:#22c55e;">● En ligne</span></div>
     </div>
-    <div class="header-right">
-      <span id="livreurName" class="livreur-name">Aubin</span>
-      <button id="toggleStatus" class="btn-status disponible">Disponible</button>
+    <div class="header-actions">
+      <div class="notif-btn">🔔</div>
+      <div class="avatar">A</div>
     </div>
   </header>
 
   <main class="livreur-main">
 
-    <section class="card solde-card">
-      <p class="card-label">Revenus aujourd'hui</p>
-      <p class="card-amount" id="soldeJour">0 FCFA</p>
-      <a href="livreur-revenus.html" class="link-small">Voir détail →</a>
-    </section>
+    <!-- Statut -->
+    <div class="status-pill">
+      <div class="s-btn active" data-status="disponible">● Disponible</div>
+      <div class="s-btn pause" data-status="pause">⏸ Pause</div>
+      <div class="s-btn offline" data-status="hors-ligne">✕ Hors ligne</div>
+    </div>
 
-    <section class="section-title-row">
-      <h2 class="section-title">Courses disponibles</h2>
-      <span class="badge" id="coursesCount">0</span>
-    </section>
+    <!-- Météo -->
+    <div class="weather-strip" id="weatherWidget">
+      <div class="weather-left">
+        <div class="weather-icon">⛅</div>
+        <div>
+          <div class="weather-temp" id="weatherTemp">27°C</div>
+          <div class="weather-desc" id="weatherDesc">Conditions favorables</div>
+        </div>
+      </div>
+      <div class="weather-right" id="weatherDetail">Yaoundé</div>
+    </div>
 
-    <section id="coursesList" class="courses-list">
+    <!-- Stats du jour -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" id="statCourses">0</div>
+        <div class="stat-lbl">Courses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statGains">0</div>
+        <div class="stat-lbl">FCFA</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statNote">—</div>
+        <div class="stat-lbl">Note ★</div>
+      </div>
+    </div>
+
+    <!-- Zones actives -->
+    <div class="hotzone-card">
+      <div class="hotzone-title">🔥 Zones actives maintenant</div>
+      <div id="zonesList">
+        <div class="zone-row">
+          <span class="zone-name">Bastos</span>
+          <div class="zone-heat">
+            <div class="heat-dot" style="background:#ef4444;"></div>
+            <span style="color:#ef4444;">Très chaud</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-name">Centre-ville</span>
+          <div class="zone-heat">
+            <div class="heat-dot" style="background:#FF6B00;"></div>
+            <span style="color:#FF6B00;">Chaud</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-name">Mvan</span>
+          <div class="zone-heat">
+            <div class="heat-dot" style="background:#eab308;"></div>
+            <span style="color:#eab308;">Modéré</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Courses disponibles -->
+    <div class="section-title">Courses proposées</div>
+    <div id="coursesList">
       <p class="empty-state">Aucune course disponible pour le moment.</p>
-    </section>
+    </div>
 
+    <!-- Navigation -->
     <nav class="bottom-nav">
       <a href="livreur-dashboard.html" class="nav-item active">
-        <span class="nav-icon">🏠</span>
-        <span>Accueil</span>
+        <span class="nav-icon">🏠</span><span>Accueil</span>
       </a>
       <a href="livreur-map.html" class="nav-item">
-        <span class="nav-icon">🗺️</span>
-        <span>Carte</span>
+        <span class="nav-icon">🗺️</span><span>Carte</span>
       </a>
       <a href="livreur-historique.html" class="nav-item">
-        <span class="nav-icon">📋</span>
-        <span>Historique</span>
+        <span class="nav-icon">📋</span><span>Courses</span>
       </a>
       <a href="livreur-revenus.html" class="nav-item">
-        <span class="nav-icon">💰</span>
-        <span>Revenus</span>
+        <span class="nav-icon">💰</span><span>Revenus</span>
+      </a>
+      <a href="livreur-profil.html" class="nav-item">
+        <span class="nav-icon">👤</span><span>Profil</span>
       </a>
     </nav>
 

@@ -11,40 +11,66 @@
 
   <header class="livreur-header">
     <a href="livreur-dashboard.html" class="btn-back">← Retour</a>
-    <h1 class="header-title">Mes revenus</h1>
+    <div style="font-size:15px;font-weight:600;">Mes revenus</div>
+    <div style="width:40px;"></div>
   </header>
 
   <main class="livreur-main">
 
-    <div class="filter-row">
-      <button class="btn-filter active" data-period="today">Aujourd'hui</button>
-      <button class="btn-filter" data-period="week">Cette semaine</button>
-      <button class="btn-filter" data-period="month">Ce mois</button>
+    <div class="period-tabs">
+      <div class="ptab active" data-period="today">Jour</div>
+      <div class="ptab" data-period="week">Semaine</div>
+      <div class="ptab" data-period="month">Mois</div>
     </div>
 
-    <section class="card revenus-summary">
-      <p class="card-label">Total gagné</p>
-      <p class="card-amount" id="totalRevenus">0 FCFA</p>
-      <div class="revenus-detail">
-        <div class="revenu-stat">
-          <span class="stat-value" id="nbCourses">0</span>
-          <span class="stat-label">Courses</span>
-        </div>
-        <div class="revenu-stat">
-          <span class="stat-value" id="distanceTotale">0 km</span>
-          <span class="stat-label">Distance</span>
-        </div>
-        <div class="revenu-stat">
-          <span class="stat-value" id="moyenneCourse">0 FCFA</span>
-          <span class="stat-label">Moyenne/course</span>
-        </div>
-      </div>
-    </section>
+    <div class="rev-big">
+      <div class="rev-amount" id="totalRevenus">0 FCFA</div>
+      <div class="rev-lbl" id="revSubtitle">Aujourd'hui · 0 courses</div>
+    </div>
 
-    <h2 class="section-title">Détail</h2>
-    <section id="revenusList" class="historique-list">
+    <!-- Graphique -->
+    <div class="rev-bars" id="revBars">
+      <div class="bar-wrap"><div class="bar" style="height:35%;"></div><div class="bar-day">Lun</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:60%;"></div><div class="bar-day">Mar</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:45%;"></div><div class="bar-day">Mer</div></div>
+      <div class="bar-wrap"><div class="bar active" style="height:100%;"></div><div class="bar-day active">Jeu</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:75%;"></div><div class="bar-day">Ven</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:85%;"></div><div class="bar-day">Sam</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:50%;"></div><div class="bar-day">Dim</div></div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" id="nbCourses">0</div>
+        <div class="stat-lbl">Courses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="distanceTotale">0 km</div>
+        <div class="stat-lbl">Distance</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="moyenneCourse">0</div>
+        <div class="stat-lbl">Moy/course</div>
+      </div>
+    </div>
+
+    <!-- Objectif bonus -->
+    <div class="bonus-card">
+      <div class="bonus-title">🎯 Objectif de la semaine</div>
+      <div class="progress-row">
+        <div class="progress-label">Courses</div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width:0%;"></div>
+        </div>
+        <div class="progress-val" id="progressVal">0/40</div>
+      </div>
+      <div class="bonus-note" id="bonusNote">Atteins 40 courses et gagne 5 000 FCFA de bonus !</div>
+    </div>
+
+    <div class="section-title">Détail des courses</div>
+    <div id="revenusList">
       <p class="empty-state">Aucun revenu pour cette période.</p>
-    </section>
+    </div>
 
     <nav class="bottom-nav">
       <a href="livreur-dashboard.html" class="nav-item">
@@ -54,10 +80,13 @@
         <span class="nav-icon">🗺️</span><span>Carte</span>
       </a>
       <a href="livreur-historique.html" class="nav-item">
-        <span class="nav-icon">📋</span><span>Historique</span>
+        <span class="nav-icon">📋</span><span>Courses</span>
       </a>
       <a href="livreur-revenus.html" class="nav-item active">
         <span class="nav-icon">💰</span><span>Revenus</span>
+      </a>
+      <a href="livreur-profil.html" class="nav-item">
+        <span class="nav-icon">👤</span><span>Profil</span>
       </a>
     </nav>
 
