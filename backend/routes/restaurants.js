@@ -6,94 +6,49 @@
 
 const express = require('express');
 const router = express.Router();
-
-// Données temporaires (à remplacer par la base de données)
-const restaurants = [
-  {
-    id: '1',
-    name: 'Chez Mama Africa',
-    category: 'local',
-    rating: 4.8,
-    delivery_time: '25 min',
-    delivery_fee: 500,
-    lat: 3.8480,
-    lng: 11.5021,
-    available: true,
-    dishes: ['Ndolé', 'Poulet DG', 'Okok']
-  },
-  {
-    id: '2',
-    name: 'Le Camerounais',
-    category: 'local',
-    rating: 4.5,
-    delivery_time: '35 min',
-    delivery_fee: 300,
-    lat: 3.8520,
-    lng: 11.5100,
-    available: true,
-    dishes: ['Ndolé', 'Koki', 'Eru']
-  },
-  {
-    id: '3',
-    name: 'Saveurs du Pays',
-    category: 'grillade',
-    rating: 4.9,
-    delivery_time: '20 min',
-    delivery_fee: 700,
-    lat: 3.8440,
-    lng: 11.4980,
-    available: true,
-    dishes: ['Poulet DG', 'Okok', 'Beignets']
-  },
-  {
-    id: '4',
-    name: 'Food Express',
-    category: 'fastfood',
-    rating: 4.1,
-    delivery_time: '40 min',
-    delivery_fee: 200,
-    lat: 3.8500,
-    lng: 11.5050,
-    available: true,
-    dishes: ['Ndolé', 'Sandwich', 'Jus']
-  }
-];
+const db = require('../../database/db');
 
 // ---------------------------------------------------
 // GET /api/restaurants
 // Recherche des restaurants par plat et filtres
 // ---------------------------------------------------
 router.get('/', (req, res) => {
-  const { search, dish, max_price, max_distance, category, min_rating } = req.query;
+  const { search, dish, category, min_rating } = req.query;
 
-  let resultats = [...restaurants];
+  let query = `
+    SELECT DISTINCT r.* FROM restaurants r
+    LEFT JOIN dishes d ON d.restaurant_id = r.id
+    WHERE r.available = 1
+  `;
+  const params = [];
 
-  // Filtrer par nom de plat ou de restaurant
   if (search) {
-    resultats = resultats.filter(r =>
-      r.name.toLowerCase().includes(search.toLowerCase()) ||
-      r.dishes.some(d => d.toLowerCase().includes(search.toLowerCase()))
-    );
+    query += ` AND (r.name LIKE ? OR d.name LIKE ?)`;
+    params.push('%' + search + '%', '%' + search + '%');
   }
 
-  // Filtrer par plat (comparateur)
   if (dish) {
-    resultats = resultats.filter(r =>
-      r.dishes.some(d => d.toLowerCase().includes(dish.toLowerCase()))
-    );
+    query += ` AND d.name LIKE ?`;
+    params.push('%' + dish + '%');
   }
 
-  // Filtrer par catégorie
   if (category) {
-    resultats = resultats.filter(r => r.category === category);
+    query += ` AND r.category = ?`;
+    params.push(category);
   }
 
-  // Filtrer par note minimum
   if (min_rating) {
-    resultats = resultats.filter(r => r.rating >= parseFloat(min_rating));
+    query += ` AND r.rating >= ?`;
+    params.push(parseFloat(min_rating));
   }
 
-  res.json(resultats);
+  db.query(query, params, (err, results) => {
+    if (err) {
+      console.error('Erreur requête restaurants :', err);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+    res.json(results);
+  });
 });
 
 // ---------------------------------------------------
@@ -107,8 +62,15 @@ router.get('/nearby', (req, res) => {
     return res.status(400).json({ error: 'Latitude et longitude requises' });
   }
 
-  // Retourner tous les restaurants (le calcul de distance sera amélioré plus tard)
-  res.json(restaurants);
+  const query = `SELECT * FROM restaurants WHERE available = 1`;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Erreur requête nearby :', err);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+    res.json(results);
+  });
 });
 
 module.exports = router;
